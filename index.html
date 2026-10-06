@@ -11,10 +11,10 @@
       --primary-color: #2c3e50;
       
       /* 🎨 PALETA DE COLORES */
-      --map-base-color: #a8e6cf;    /* Verde pastel base */
-      --map-hover-color: #3b9a6d;   /* Verde oscuro hover */
-      --map-border-color: #000000;  /* Bordes negros */
-      --instagram-color: #e1306c;   /* Color corporativo de Instagram */
+      --map-base-color: #a8e6cf;
+      --map-hover-color: #3b9a6d;
+      --map-border-color: #000000;
+      --instagram-color: #e1306c;
     }
 
     @media (min-width: 1400px) {
@@ -47,11 +47,39 @@
       height: 60px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
     }
 
     .header h1 {
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       color: var(--primary-color);
+    }
+
+    /* Botones de cambio de vista (Mapa / Lista) */
+    .view-toggle {
+      display: flex;
+      background: var(--bg-color);
+      padding: 3px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .toggle-btn {
+      border: none;
+      background: none;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #64748b;
+      transition: all 0.2s ease;
+    }
+
+    .toggle-btn.active {
+      background: #ffffff;
+      color: var(--primary-color);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
     /* Layout principal */
@@ -59,15 +87,17 @@
       display: flex;
       flex: 1;
       height: calc(100vh - 60px);
+      overflow: hidden;
     }
 
-    /* Área del mapa desplazada a la izquierda */
-    .map-area {
+    /* Área izquierda (Contiene Mapa y Lista) */
+    .main-area {
       flex: 1;
       display: flex;
       justify-content: flex-start;
       align-items: center;
       padding: 1.5rem 1.5rem 1.5rem 3rem;
+      overflow-y: auto;
     }
 
     .map-container {
@@ -90,7 +120,56 @@
       display: block;
     }
 
-    /* Estilos del SVG */
+    /* Vista Lista */
+    .list-container {
+      display: none; /* Oculta por defecto */
+      width: 100%;
+      max-width: 600px;
+      height: 100%;
+      background: #ffffff;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      flex-direction: column;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary-color);
+    }
+
+    .udalerri-ul {
+      list-style: none;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .udalerri-li {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      font-weight: 500;
+      color: #334155;
+      transition: background 0.15s, color 0.15s;
+      border-radius: 6px;
+    }
+
+    .udalerri-li:hover {
+      background-color: var(--bg-color);
+      color: var(--primary-color);
+    }
+
+    /* Estilos SVG */
     .map-container svg path, 
     .map-container svg polygon {
       fill: var(--map-base-color) !important;
@@ -153,7 +232,6 @@
       margin: 0.5rem 0 0.8rem 0;
     }
 
-    /* Estilo del enlace a Instagram */
     .race-link {
       color: var(--primary-color);
       text-decoration: none;
@@ -191,28 +269,66 @@
     .map-tooltip.visible {
       opacity: 1;
     }
+
+    /* Adaptación Móvil */
+    @media (max-width: 768px) {
+      .app-layout {
+        flex-direction: column;
+      }
+
+      .main-area {
+        padding: 1rem;
+        justify-content: center;
+        height: 50vh;
+      }
+
+      .sidebar-fixed {
+        width: 100%;
+        height: 50vh;
+        border-left: none;
+        border-top: 1px solid #e2e8f0;
+      }
+
+      .map-container svg {
+        max-width: 100%;
+        max-height: 40vh;
+      }
+    }
   </style>
 </head>
 <body>
 
+  <!-- Goiburua con Selector de Vista -->
   <header class="header">
-    <h1>Gipuzkoako Mapa Interaktiboa</h1>
+    <h1>Gipuzkoa</h1>
+    <div class="view-toggle">
+      <button class="toggle-btn active" id="btnMap">Mapa</button>
+      <button class="toggle-btn" id="btnList">Zerrenda</button>
+    </div>
   </header>
 
   <div class="app-layout">
-    <div class="map-area">
+    <!-- Área principal (Mapa o Lista) -->
+    <div class="main-area">
+      <!-- Contenedor Mapa -->
       <main class="map-container" id="mapContainer">
         <p>Mapa kargatzen...</p>
       </main>
+
+      <!-- Contenedor Lista + Buscador -->
+      <div class="list-container" id="listContainer">
+        <input type="text" id="searchInput" class="search-input" placeholder="Bilatu udalerria...">
+        <ul class="udalerri-ul" id="udalerriUl"></ul>
+      </div>
     </div>
 
-    <!-- Panel Lateral -->
+    <!-- Panel Lateral de Información -->
     <aside class="sidebar-fixed">
       <div class="sidebar-header">
         <h2 id="sidebarTitle">Aukeratu udalerria</h2>
       </div>
       <div class="sidebar-content" id="sidebarContent">
-        <p>Egin klik mapako udalerri batean haren datuak ikusteko.</p>
+        <p>Egin klik mapako edo zerrendako udalerri batean haren datuak ikusteko.</p>
       </div>
     </aside>
   </div>
@@ -223,7 +339,13 @@
     const sidebarTitle = document.getElementById('sidebarTitle');
     const sidebarContent = document.getElementById('sidebarContent');
     const mapContainer = document.getElementById('mapContainer');
+    const listContainer = document.getElementById('listContainer');
+    const udalerriUl = document.getElementById('udalerriUl');
+    const searchInput = document.getElementById('searchInput');
     const tooltip = document.getElementById('mapTooltip');
+
+    const btnMap = document.getElementById('btnMap');
+    const btnList = document.getElementById('btnList');
 
     /* 📌 UDALERRIEN DATU-BASEA (88 Udalerri) */
     const udalerriDatuak = {
@@ -330,6 +452,18 @@
       "Leintz-Gatzaga": { titulua: "Leintz-Gatzaga", edukia: "" }
     };
 
+    // Función para mostrar datos de un municipio en el panel lateral
+    function selectUdalerria(rawId) {
+      if (udalerriDatuak[rawId]) {
+        sidebarTitle.textContent = udalerriDatuak[rawId].titulua;
+        sidebarContent.innerHTML = udalerriDatuak[rawId].edukia || `<p>Ez dago informazio gehigarririk sartuta.</p>`;
+      } else {
+        sidebarTitle.textContent = rawId;
+        sidebarContent.innerHTML = `<p>Ez dago informazio gehigarririk sartuta.</p>`;
+      }
+    }
+
+    // Cargar mapa SVG
     fetch('mapa.svg')
       .then(response => {
         if (!response.ok) throw new Error('Ez da mapa.svg aurkitu');
@@ -346,7 +480,6 @@
                         region.getAttribute('id') || 
                         `Udalerria ${index + 1}`;
 
-          // Hover: Tooltip
           region.addEventListener('mousemove', (e) => {
             const data = udalerriDatuak[rawId];
             tooltip.textContent = data ? data.titulua : rawId;
@@ -359,17 +492,9 @@
             tooltip.classList.remove('visible');
           });
 
-          // Click: Cargar datos en el panel
           region.addEventListener('click', (e) => {
             e.stopPropagation();
-
-            if (udalerriDatuak[rawId]) {
-              sidebarTitle.textContent = udalerriDatuak[rawId].titulua;
-              sidebarContent.innerHTML = udalerriDatuak[rawId].edukia || `<p>Ez dago informazio gehigarririk sartuta.</p>`;
-            } else {
-              sidebarTitle.textContent = rawId;
-              sidebarContent.innerHTML = `<p>Ez dago informazio gehigarririk sartuta.</p>`;
-            }
+            selectUdalerria(rawId);
           });
         });
       })
@@ -377,6 +502,44 @@
         console.error(error);
         mapContainer.innerHTML = `<p style="color:red;">Errorea mapa.svg kargatzean.</p>`;
       });
+
+    // Generar Lista interactiva con buscador
+    function renderList(filter = "") {
+      udalerriUl.innerHTML = "";
+      const sortedKeys = Object.keys(udalerriDatuak).sort((a, b) => a.localeCompare(b));
+
+      sortedKeys.forEach(key => {
+        const item = udalerriDatuak[key];
+        if (item.titulua.toLowerCase().includes(filter.toLowerCase())) {
+          const li = document.createElement('li');
+          li.className = 'udalerri-li';
+          li.textContent = item.titulua;
+          li.addEventListener('click', () => selectUdalerria(key));
+          udalerriUl.appendChild(li);
+        }
+      });
+    }
+
+    searchInput.addEventListener('input', (e) => {
+      renderList(e.target.value);
+    });
+
+    renderList();
+
+    // Lógica para alternar vistas (Mapa / Lista)
+    btnMap.addEventListener('click', () => {
+      btnMap.classList.add('active');
+      btnList.classList.remove('active');
+      mapContainer.style.display = 'flex';
+      listContainer.style.display = 'none';
+    });
+
+    btnList.addEventListener('click', () => {
+      btnList.classList.add('active');
+      btnMap.classList.remove('active');
+      mapContainer.style.display = 'none';
+      listContainer.style.display = 'flex';
+    });
   </script>
 </body>
 </html>
