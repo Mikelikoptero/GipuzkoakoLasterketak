@@ -7,10 +7,13 @@
   <style>
     :root {
       --bg-color: #f4f6f8;
-      --sidebar-width: 320px;
+      --sidebar-width: 300px;
       --primary-color: #2c3e50;
-      --hover-color: #f1c40f;
-      --active-color: #e67e22;
+      
+      /* 🎨 PALETA DE COLORES DEL MAPA */
+      --map-base-color: #a8e6cf;    /* Verde pastel de base */
+      --map-hover-color: #3b9a6d;   /* Verde más oscuro al pasar el ratón (hover) */
+      --map-border-color: #000000;  /* Líneas delimitadoras negras */
     }
 
     * {
@@ -30,7 +33,7 @@
 
     /* Goiburua / Encabezado */
     .header {
-      padding: 1rem 1.5rem;
+      padding: 0 1.5rem;
       background-color: #ffffff;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
       z-index: 10;
@@ -44,57 +47,66 @@
       color: var(--primary-color);
     }
 
-    /* Eduki nagusia / Layout principal */
+    /* Layout principal dividido entre el Área del mapa y el Menú lateral */
     .app-layout {
       display: flex;
       flex: 1;
       height: calc(100vh - 60px);
-      position: relative;
     }
 
-    /* Maparen eremua / Área del mapa */
-    .map-container {
+    /* Área que contiene el mapa */
+    .map-area {
       flex: 1;
-      background: #ffffff;
-      margin: 1rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 1rem;
-      overflow: hidden;
-      margin-right: calc(var(--sidebar-width) + 1rem); /* Espacio reservado para el panel derecho */
+    }
+
+    /* Recuadro exterior del mapa (ajustado al tamaño real del SVG) */
+    .map-container {
+      background: #ffffff;
+      padding: 0.75rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: fit-content;
+      max-width: 100%;
     }
 
     .map-container svg {
-      width: 100%;
-      height: 100%;
-      max-height: 80vh;
+      width: auto;
+      height: auto;
+      max-width: calc(100vw - var(--sidebar-width) - 4rem);
+      max-height: calc(100vh - 120px);
+      display: block;
     }
 
-    /* Estilos vectoriales del SVG */
+    /* Estilos y colores del SVG (Sobrescriben el color original de mapa.svg) */
     .map-container svg path, 
     .map-container svg polygon, 
     .map-container svg g {
+      fill: var(--map-base-color) !important;
+      stroke: var(--map-border-color) !important;
+      stroke-width: 1px !important;
       cursor: pointer;
-      transition: fill 0.2s ease, stroke 0.2s ease;
+      transition: fill 0.2s ease, stroke-width 0.2s ease;
     }
 
+    /* Efecto Hover */
     .map-container svg path:hover, 
     .map-container svg polygon:hover {
-      fill: var(--hover-color) !important;
-      stroke: #333 !important;
-      stroke-width: 1.5px !important;
+      fill: var(--map-hover-color) !important;
+      stroke: var(--map-border-color) !important;
+      stroke-width: 1.8px !important;
     }
 
-    /* Panel Fijo en la Derecha (Eskuin-panela) */
+    /* Panel Fijo en la Derecha */
     .sidebar-fixed {
       width: var(--sidebar-width);
-      height: calc(100vh - 60px);
-      position: fixed;
-      top: 60px;
-      right: 0;
+      height: 100%;
       background-color: #ffffff;
       border-left: 1px solid #e2e8f0;
       box-shadow: -2px 0 10px rgba(0,0,0,0.03);
@@ -120,7 +132,7 @@
       line-height: 1.6;
     }
 
-    /* Tooltip Flotante (Etiqueta flotante al pasar el ratón) */
+    /* Etiqueta flotante (Tooltip) */
     .map-tooltip {
       position: fixed;
       background-color: rgba(44, 62, 80, 0.9);
@@ -131,7 +143,7 @@
       font-weight: 600;
       pointer-events: none;
       opacity: 0;
-      transition: opacity 0.15s ease, transform 0.05s ease;
+      transition: opacity 0.15s ease;
       z-index: 1000;
       white-space: nowrap;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
@@ -150,10 +162,12 @@
   </header>
 
   <div class="app-layout">
-    <!-- Contenedor donde se inyectará mapa.svg -->
-    <main class="map-container" id="mapContainer">
-      <p>Mapa kargatzen...</p>
-    </main>
+    <!-- Área principal con contenedor ajustado -->
+    <div class="map-area">
+      <main class="map-container" id="mapContainer">
+        <p>Mapa kargatzen...</p>
+      </main>
+    </div>
 
     <!-- Panel Lateral Fijo en la Derecha -->
     <aside class="sidebar-fixed">
@@ -175,38 +189,26 @@
     const mapContainer = document.getElementById('mapContainer');
     const tooltip = document.getElementById('mapTooltip');
 
-    // Diccionario de equivalencias (Opcional: puedes asignar nombres formateados a tus IDs)
-    const udalerriIzenak = {
-      // "path_id": "Nombre Formateado"
-    };
-
     // Cargar dinámicamente mapa.svg desde el repositorio
     fetch('mapa.svg')
       .then(response => {
-        if (!response.ok) {
-          throw new Error('Ez da mapa.svg fitxategia aurkitu');
-        }
+        if (!response.ok) throw new Error('Ez da mapa.svg aurkitu');
         return response.text();
       })
       .then(svgData => {
-        // Inyectar el código vectorial
         mapContainer.innerHTML = svgData;
 
-        // Seleccionar elementos trazados
         const regions = mapContainer.querySelectorAll('path, polygon');
 
         regions.forEach((region, index) => {
-          // Obtener nombre del atributo del SVG (id, name, data-name) o usar índice provisional
           const rawId = region.getAttribute('data-name') || 
                         region.getAttribute('name') || 
                         region.getAttribute('id') || 
                         `Udalerria ${index + 1}`;
 
-          const izena = udalerriIzenak[rawId] || rawId;
-
-          // 1. Evento HOVER: Mostrar y mover Tooltip flotante
+          // Hover: Mostrar tooltip
           region.addEventListener('mousemove', (e) => {
-            tooltip.textContent = izena;
+            tooltip.textContent = rawId;
             tooltip.style.left = `${e.clientX + 12}px`;
             tooltip.style.top = `${e.clientY + 12}px`;
             tooltip.classList.add('visible');
@@ -216,11 +218,11 @@
             tooltip.classList.remove('visible');
           });
 
-          // 2. Evento CLICK: Mostrar información en el panel fijo lateral
+          // Click: Mostrar información en el panel
           region.addEventListener('click', () => {
-            sidebarTitle.textContent = izena;
+            sidebarTitle.textContent = rawId;
             sidebarContent.innerHTML = `
-              <p>Hautatutako udalerria: <strong>${izena}</strong></p>
+              <p>Hautatutako udalerria: <strong>${rawId}</strong></p>
               <br>
               <p>Hemen udalerri honi buruzko edukia edo datuak jar ditzakezu.</p>
             `;
@@ -229,7 +231,7 @@
       })
       .catch(error => {
         console.error(error);
-        mapContainer.innerHTML = `<p style="color:red;">Errorea mapa.svg kargatzean. Ziurtatu fitxategia index.html doan karpeta berean dagoela.</p>`;
+        mapContainer.innerHTML = `<p style="color:red;">Errorea mapa.svg kargatzean.</p>`;
       });
   </script>
 </body>
