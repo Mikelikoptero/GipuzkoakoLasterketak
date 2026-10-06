@@ -7,7 +7,7 @@
   <style>
     :root {
       --bg-color: #f4f6f8;
-      --sidebar-width: 550px; /* Panel más ancho en ordenadores */
+      --sidebar-width: 550px;
       --primary-color: #2c3e50;
       
       /* 🎨 PALETA DE COLORES */
@@ -19,7 +19,7 @@
 
     @media (min-width: 1400px) {
       :root {
-        --sidebar-width: 650px; /* Amplio para monitores grandes */
+        --sidebar-width: 650px;
       }
     }
 
@@ -47,14 +47,8 @@
       height: 60px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 1.25rem;
+      justify-content: flex-start; /* Todo alineado a la izquierda */
+      gap: 1.5rem;
     }
 
     .header h1 {
@@ -63,7 +57,7 @@
       white-space: nowrap;
     }
 
-    /* Buscador y Toggle juntos */
+    /* Buscador y Toggle alineados a la izquierda */
     .header-controls {
       display: flex;
       align-items: center;
@@ -297,17 +291,14 @@
         height: auto;
         padding: 0.75rem;
         flex-direction: column;
-        align-items: stretch;
-      }
-
-      .header-left {
-        width: 100%;
-        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.5rem;
       }
 
       .header-controls {
         width: 100%;
-        justify-content: space-between;
+        justify-content: flex-start;
+        flex-wrap: wrap;
       }
 
       .search-input {
@@ -350,13 +341,9 @@
 </head>
 <body>
 
-  <!-- Goiburua -->
+  <!-- Goiburua todo alineado a la izquierda -->
   <header class="header">
-    <div class="header-left">
-      <h1>Gipuzkoa</h1>
-    </div>
-    
-    <!-- Buscador seguido directamente del botón Mapa / Zerrenda -->
+    <h1>Gipuzkoa</h1>
     <div class="header-controls">
       <input type="text" id="searchInput" class="search-input" placeholder="Bilatu udalerria...">
       <div class="view-toggle">
@@ -577,7 +564,7 @@
       });
     }
 
-    // Filtro del buscador global
+    // Filtro del buscador
     searchInput.addEventListener('input', (e) => {
       const term = e.target.value;
       renderList(term);
