@@ -65,6 +65,10 @@
       position: relative;
     }
 
+    .search-wrapper {
+      position: relative;
+    }
+
     .search-input {
       width: 240px;
       padding: 6px 12px;
@@ -127,7 +131,7 @@
 
     /* Vista Mapa */
     .map-container {
-      display: none; /* Inicia oculto por defecto */
+      display: none;
       background: #ffffff;
       padding: 0.75rem;
       border-radius: 8px;
@@ -148,7 +152,7 @@
 
     /* Vista Lista */
     .list-container {
-      display: flex; /* Inicia visible por defecto */
+      display: flex;
       width: 100%;
       max-width: 600px;
       height: 100%;
@@ -282,7 +286,7 @@
       opacity: 1;
     }
 
-    /* 📱 Adaptación móvil con desplegable al buscar */
+    /* 📱 Adaptación móvil con desplegable desde el buscador */
     @media (max-width: 768px) {
       body {
         overflow: auto;
@@ -298,31 +302,35 @@
 
       .header-controls {
         width: 100%;
-        justify-content: flex-start;
-        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+
+      .search-wrapper {
+        flex: 1;
+        margin-right: 0.5rem;
       }
 
       .search-input {
         width: 100%;
-        max-width: 100%;
       }
 
       .search-input:focus {
         width: 100%;
       }
 
-      /* Lista como desplegable absoluto en móvil */
+      /* Lista desplegable flotante en móvil */
       .list-container {
-        display: none; /* Oculto inicialmente en móvil */
+        display: none;
         position: absolute;
-        top: 100%;
+        top: calc(100% + 6px);
         left: 0;
-        right: 0;
-        width: 100%;
-        max-height: 50vh;
-        z-index: 100;
-        border-radius: 0 0 12px 12px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        width: 100vw;
+        max-width: calc(100vw - 1.5rem);
+        max-height: 55vh;
+        z-index: 999;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        border: 1px solid #cbd5e1;
       }
 
       .list-container.open {
@@ -364,7 +372,15 @@
   <header class="header">
     <h1>Gipuzkoa</h1>
     <div class="header-controls">
-      <input type="text" id="searchInput" class="search-input" placeholder="Bilatu udalerria..." autocomplete="off">
+      <div class="search-wrapper">
+        <input type="text" id="searchInput" class="search-input" placeholder="Bilatu udalerria..." autocomplete="off">
+        
+        <!-- Lista / Desplegable integrado -->
+        <div class="list-container" id="listContainer">
+          <ul class="udalerri-ul" id="udalerriUl"></ul>
+        </div>
+      </div>
+
       <div class="view-toggle">
         <button class="toggle-btn" id="btnMap">Mapa</button>
         <button class="toggle-btn active" id="btnList">Zerrenda</button>
@@ -379,11 +395,6 @@
       <main class="map-container" id="mapContainer">
         <p>Mapa kargatzen...</p>
       </main>
-
-      <!-- Lista (Desplegable en móvil) -->
-      <div class="list-container" id="listContainer">
-        <ul class="udalerri-ul" id="udalerriUl"></ul>
-      </div>
     </div>
 
     <!-- Panel Lateral Protagonista -->
@@ -411,7 +422,8 @@
     const btnMap = document.getElementById('btnMap');
     const btnList = document.getElementById('btnList');
 
-    let isMobile = () => window.innerWidth <= 768;
+    let currentView = 'list'; // 'map' edo 'list'
+    const isMobile = () => window.innerWidth <= 768;
 
     /* 📌 UDALERRIEN DATU-BASEA (88 Udalerri) */
     const udalerriDatuak = {
@@ -527,7 +539,6 @@
         sidebarContent.innerHTML = `<p>Ez dago informazio gehigarririk sartuta.</p>`;
       }
 
-      // Si está en móvil, cerrar el desplegable tras seleccionar
       if (isMobile()) {
         listContainer.classList.remove('open');
       }
@@ -584,26 +595,27 @@
           const li = document.createElement('li');
           li.className = 'udalerri-li';
           li.textContent = item.titulua;
-          li.addEventListener('click', () => selectUdalerria(key));
+          li.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectUdalerria(key);
+          });
           udalerriUl.appendChild(li);
         }
       });
     }
 
-    // Eventos del buscador
-    searchInput.addEventListener('focus', () => {
-      if (isMobile()) {
-        listContainer.classList.add('open');
-      }
-    });
+    // Mostrar desplegable al interactuar con el buscador
+    function openDropdown() {
+      listContainer.classList.add('open');
+    }
+
+    searchInput.addEventListener('focus', openDropdown);
+    searchInput.addEventListener('click', openDropdown);
 
     searchInput.addEventListener('input', (e) => {
       const term = e.target.value;
       renderList(term);
-
-      if (isMobile() && !listContainer.classList.contains('open')) {
-        listContainer.classList.add('open');
-      }
+      openDropdown();
 
       if (term.trim() !== "") {
         const matchKey = Object.keys(udalerriDatuak).find(k => 
@@ -615,10 +627,12 @@
       }
     });
 
-    // Clic fuera para cerrar desplegable en móvil
+    // Cerrar desplegable si se hace clic fuera
     document.addEventListener('click', (e) => {
-      if (isMobile() && !searchInput.contains(e.target) && !listContainer.contains(e.target)) {
-        listContainer.classList.remove('open');
+      if (!searchInput.contains(e.target) && !listContainer.contains(e.target)) {
+        if (isMobile() || currentView === 'map') {
+          listContainer.classList.remove('open');
+        }
       }
     });
 
@@ -626,21 +640,19 @@
 
     // Toggle entre Vistas
     btnMap.addEventListener('click', () => {
+      currentView = 'map';
       btnMap.classList.add('active');
       btnList.classList.remove('active');
       mapContainer.style.display = 'flex';
-      listContainer.style.display = 'none';
       listContainer.classList.remove('open');
     });
 
     btnList.addEventListener('click', () => {
+      currentView = 'list';
       btnList.classList.add('active');
       btnMap.classList.remove('active');
       mapContainer.style.display = 'none';
-      listContainer.style.display = 'flex';
-      if (isMobile()) {
-        listContainer.classList.add('open');
-      }
+      listContainer.classList.add('open');
     });
   </script>
 </body>
