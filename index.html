@@ -147,6 +147,17 @@
       line-height: 1.6;
     }
 
+    .sidebar-content h3 {
+      font-size: 1.15rem;
+      color: var(--primary-color);
+      margin: 1.2rem 0 0.5rem 0;
+    }
+
+    .sidebar-content ul {
+      margin-left: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
     /* Tooltip */
     .map-tooltip {
       position: fixed;
@@ -201,7 +212,7 @@
     const mapContainer = document.getElementById('mapContainer');
     const tooltip = document.getElementById('mapTooltip');
 
-    /* 📌 LIZTETATUTAKO 88 UDALERRIAK (Euskaraz) */
+    /* 📌 UDALERRIEN DATU-BASEA (88 Udalerri) */
     const udalerriDatuak = {
       "Abaltzisketa": { titulua: "Abaltzisketa", edukia: "" },
       "Aduna": { titulua: "Aduna", edukia: "" },
@@ -245,7 +256,19 @@
       "Gaintza": { titulua: "Gaintza", edukia: "" },
       "Gaztelu": { titulua: "Gaztelu", edukia: "" },
       "Getaria": { titulua: "Getaria", edukia: "" },
-      "Hernani": { titulua: "Hernani", edukia: "" },
+      "Hernani": { 
+        titulua: "Hernani", 
+        edukia: `
+          <h3>Ereñotzuko Mendi Lasterketa</h3>
+          <p>Ereñotzu auzoan urtero antolatzen den mendi lasterketa ezaguna.</p>
+          <p><strong>Azken hiru urteetako datak:</strong></p>
+          <ul>
+            <li><strong>2024:</strong> Ekainak 1, larunbata (12. edizioa)</li>
+            <li><strong>2025:</strong> Maiatzak 31, larunbata (13. edizioa)</li>
+            <li><strong>2026:</strong> Maiatzak 30, larunbata (14. edizioa)</li>
+          </ul>
+        ` 
+      },
       "Hernialde": { titulua: "Hernialde", edukia: "" },
       "Hondarribia": { titulua: "Hondarribia", edukia: "" },
       "Ibarra": { titulua: "Ibarra", edukia: "" },
@@ -279,7 +302,7 @@
       "Urnieta": { titulua: "Urnieta", edukia: "" },
       "Urretxu": { titulua: "Urretxu", edukia: "" },
       "Usurbil": { titulua: "Usurbil", edukia: "" },
-      "Amasa-Billabona": { titulua: "Amasa-Villabona", edukia: "" },
+      "Villabona": { titulua: "Amasa-Villabona", edukia: "" },
       "Zaldibia": { titulua: "Zaldibia", edukia: "" },
       "Zarautz": { titulua: "Zarautz", edukia: "" },
       "Zegama": { titulua: "Zegama", edukia: "" },
@@ -289,7 +312,6 @@
       "Zumaia": { titulua: "Zumaia", edukia: "" },
       "Zumarraga": { titulua: "Zumarraga", edukia: "" },
       "Arrasate": { titulua: "Arrasate / Mondragón", edukia: "" },
-      "Baliarrain": { titulua: "Baliarrain", edukia: "" },
       "Leintz-Gatzaga": { titulua: "Leintz-Gatzaga", edukia: "" }
     };
 
@@ -309,7 +331,7 @@
                         region.getAttribute('id') || 
                         `Udalerria ${index + 1}`;
 
-          // Hover: Mover Tooltip
+          // Hover: Tooltip
           region.addEventListener('mousemove', (e) => {
             const data = udalerriDatuak[rawId];
             tooltip.textContent = data ? data.titulua : rawId;
