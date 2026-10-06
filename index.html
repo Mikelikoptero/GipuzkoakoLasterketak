@@ -14,6 +14,7 @@
       --map-base-color: #a8e6cf;    /* Verde pastel base */
       --map-hover-color: #3b9a6d;   /* Verde oscuro hover */
       --map-border-color: #000000;  /* Bordes negros */
+      --instagram-color: #e1306c;   /* Color corporativo de Instagram */
     }
 
     @media (min-width: 1400px) {
@@ -149,8 +150,20 @@
 
     .sidebar-content h3 {
       font-size: 1.15rem;
-      color: var(--primary-color);
       margin: 0.5rem 0 0.8rem 0;
+    }
+
+    /* Estilo del enlace a Instagram */
+    .race-link {
+      color: var(--primary-color);
+      text-decoration: none;
+      transition: color 0.2s ease;
+      display: inline-block;
+    }
+
+    .race-link:hover {
+      color: var(--instagram-color);
+      text-decoration: underline;
     }
 
     .sidebar-content ul {
@@ -259,7 +272,11 @@
       "Hernani": { 
         titulua: "Hernani", 
         edukia: `
-          <h3>Ereñotzuko Mendi Lasterketa</h3>
+          <h3>
+            <a href="https://www.instagram.com/axeriak_mlt/" target="_blank" rel="noopener noreferrer" class="race-link">
+              Ereñotzuko Mendi Lasterketa ↗
+            </a>
+          </h3>
           <ul>
             <li><strong>2024 (XII. edizioa):</strong> Ekainak 1</li>
             <li><strong>2025 (XIII. edizioa):</strong> Maiatzak 31</li>
