@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mapa de Gipuzkoa</title>
+  <title>Mapa Interactivo de Gipuzkoa</title>
   <style>
     :root {
       --bg-color: #f4f6f8;
       --sidebar-width: 320px;
       --primary-color: #2c3e50;
-      --accent-color: #3498db;
+      --hover-color: #f1c40f;
     }
 
     * {
@@ -24,7 +24,7 @@
       overflow-x: hidden;
     }
 
-    /* Layout Principal */
+    /* Encabezado */
     .header {
       display: flex;
       align-items: center;
@@ -50,6 +50,7 @@
       background-color: #eee;
     }
 
+    /* Contenedor del Mapa */
     .main-content {
       display: flex;
       justify-content: center;
@@ -58,35 +59,41 @@
       padding: 2rem;
     }
 
-    /* Contenedor del Mapa */
     .map-container {
       width: 100%;
-      max-width: 800px;
+      max-width: 900px;
       background: white;
       padding: 2rem;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
+    /* Estilos dinámicos para los elementos vectoriales del mapa.svg */
     .map-container svg {
       width: 100%;
       height: auto;
+      max-height: 70vh;
     }
 
-    /* Estilos del SVG */
-    .region {
-      fill: #2ecc71;
-      stroke: #ffffff;
-      stroke-width: 1.5;
+    .map-container svg path, 
+    .map-container svg polygon, 
+    .map-container svg g {
       cursor: pointer;
-      transition: fill 0.2s, transform 0.2s;
+      transition: fill 0.2s ease, stroke 0.2s ease, transform 0.2s ease;
     }
 
-    .region:hover {
-      fill: #27ae60;
+    /* Efecto al pasar el ratón por un municipio */
+    .map-container svg path:hover, 
+    .map-container svg polygon:hover {
+      fill: var(--hover-color) !important;
+      stroke: #333 !important;
+      stroke-width: 1.5px !important;
     }
 
-    /* Menú Lateral (Drawer) */
+    /* Menú Lateral (Sidebar) */
     .sidebar {
       position: fixed;
       top: 0;
@@ -129,10 +136,10 @@
 
     .sidebar-content p {
       color: #555;
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
-    /* Capa de fondo al abrir menú */
+    /* Capa de fondo oscuro al abrir el menú */
     .overlay {
       position: fixed;
       top: 0;
@@ -167,42 +174,17 @@
       <button class="close-btn" id="closeMenu" aria-label="Cerrar Menú">&times;</button>
     </div>
     <div class="sidebar-content" id="sidebarContent">
-      <p>Haz clic en una comarca o zona del mapa para ver los detalles aquí.</p>
+      <p>Selecciona una zona o municipio del mapa para abrir los detalles.</p>
     </div>
   </aside>
 
   <!-- Capa oscura de fondo -->
   <div class="overlay" id="overlay"></div>
 
-  <!-- Contenido Principal con el Mapa -->
+  <!-- Contenedor donde se inyectará mapa.svg -->
   <main class="main-content">
-    <div class="map-container">
-      <!-- SVG simplificado de Gipuzkoa (Comarcas/Zonas principales) -->
-      <svg viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
-        <!-- Donostialdea -->
-        <path class="region" data-name="Donostialdea" data-info="Incluye Donostia, Errenteria, Pasaia, Hernani, etc." d="M 310,90 L 380,80 L 390,130 L 330,150 L 300,120 Z" />
-        
-        <!-- Bidasoa Beherea -->
-        <path class="region" data-name="Bidasoa Beherea" data-info="Comarca fronteriza con Irun y Hondarribia." d="M 380,80 L 450,70 L 440,120 L 390,130 Z" />
-        
-        <!-- Oarsoaldea / Lezo, Oiartzun -->
-        <path class="region" data-name="Oarsoaldea" data-info="Comarca del noreste que abarca desde la bahía de Pasaia hasta Peñas de Aia." d="M 370,110 L 420,100 L 410,150 L 360,140 Z" opacity="0.9" />
-
-        <!-- Urola Kosta -->
-        <path class="region" data-name="Urola Kosta" data-info="Costa central: Zarautz, Zumaia, Getaria, Azpeitia, Azkoitia." d="M 210,100 L 310,90 L 300,120 L 260,180 L 200,150 Z" />
-
-        <!-- Debabarrena -->
-        <path class="region" data-name="Debabarrena" data-info="Bajo Deba: Eibar, Elgoibar, Deba, Mutriku." d="M 130,120 L 210,100 L 200,150 L 140,160 Z" />
-
-        <!-- Debagoeina -->
-        <path class="region" data-name="Debagoiena" data-info="Alto Deba: Arrasate, Bergara, Oñati." d="M 120,160 L 200,150 L 210,230 L 130,240 Z" />
-
-        <!-- Goierri -->
-        <path class="region" data-name="Goierri" data-info="Interior sur: Beasain, Ordizia, Tolosaldea límite, Aralar." d="M 210,230 L 290,190 L 320,280 L 220,290 Z" />
-
-        <!-- Tolosaldea -->
-        <path class="region" data-name="Tolosaldea" data-info="Entorno de Tolosa y valles adyacentes." d="M 260,180 L 330,150 L 360,220 L 290,190 Z" />
-      </svg>
+    <div class="map-container" id="mapContainer">
+      <p>Cargando mapa...</p>
     </div>
   </main>
 
@@ -213,8 +195,9 @@
     const closeMenuBtn = document.getElementById('closeMenu');
     const sidebarTitle = document.getElementById('sidebarTitle');
     const sidebarContent = document.getElementById('sidebarContent');
+    const mapContainer = document.getElementById('mapContainer');
 
-    // Funciones de apertura y cierre del menú
+    // Control del Menú Lateral
     function openSidebar() {
       sidebar.classList.add('open');
       overlay.classList.add('active');
@@ -229,20 +212,43 @@
     closeMenuBtn.addEventListener('click', closeSidebar);
     overlay.addEventListener('click', closeSidebar);
 
-    // Interacción con los elementos del Mapa SVG
-    document.querySelectorAll('.region').forEach(region => {
-      region.addEventListener('click', (e) => {
-        const name = e.target.getAttribute('data-name');
-        const info = e.target.getAttribute('data-info');
+    // Cargar dinámicamente mapa.svg desde la raíz del proyecto
+    fetch('mapa.svg')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('No se pudo encontrar el archivo mapa.svg');
+        }
+        return response.text();
+      })
+      .then(svgData => {
+        // Inyectar el código SVG dentro del contenedor
+        mapContainer.innerHTML = svgData;
 
-        // Actualizar contenido del menú lateral
-        sidebarTitle.textContent = name;
-        sidebarContent.innerHTML = `<p>${info}</p>`;
+        // Seleccionar todos los trazados del SVG
+        const regions = mapContainer.querySelectorAll('path, polygon');
 
-        // Abrir el menú
-        openSidebar();
+        regions.forEach((region, index) => {
+          // Detectar el nombre o ID de cada municipio si existe en el SVG
+          const name = region.getAttribute('name') || 
+                       region.getAttribute('id') || 
+                       region.getAttribute('data-name') || 
+                       `Zona ${index + 1}`;
+
+          region.addEventListener('click', () => {
+            sidebarTitle.textContent = name;
+            sidebarContent.innerHTML = `
+              <p>Has seleccionado <strong>${name}</strong>.</p>
+              <br>
+              <p>Aquí puedes añadir cualquier contenido personalizado sobre esta zona de Gipuzkoa.</p>
+            `;
+            openSidebar();
+          });
+        });
+      })
+      .catch(error => {
+        console.error(error);
+        mapContainer.innerHTML = `<p style="color:red;">Error al cargar el archivo mapa.svg. Asegúrate de que está subido en la misma carpeta que index.html.</p>`;
       });
-    });
   </script>
 </body>
 </html>
