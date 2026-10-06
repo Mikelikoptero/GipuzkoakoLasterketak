@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="eu">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mapa Interactivo de Gipuzkoa</title>
+  <title>Gipuzkoako Mapa Interaktiboa</title>
   <style>
     :root {
       --bg-color: #f4f6f8;
       --sidebar-width: 320px;
       --primary-color: #2c3e50;
       --hover-color: #f1c40f;
+      --active-color: #e67e22;
     }
 
     * {
@@ -21,71 +22,65 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg-color);
-      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
     }
 
-    /* Encabezado */
+    /* Goiburua / Encabezado */
     .header {
-      display: flex;
-      align-items: center;
       padding: 1rem 1.5rem;
       background-color: #ffffff;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      position: relative;
       z-index: 10;
-    }
-
-    .menu-btn {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      padding: 0.5rem;
-      margin-right: 1rem;
-      border-radius: 4px;
-      transition: background 0.2s;
-    }
-
-    .menu-btn:hover {
-      background-color: #eee;
-    }
-
-    /* Contenedor del Mapa */
-    .main-content {
+      height: 60px;
       display: flex;
-      justify-content: center;
       align-items: center;
-      min-height: calc(100vh - 70px);
-      padding: 2rem;
     }
 
+    .header h1 {
+      font-size: 1.25rem;
+      color: var(--primary-color);
+    }
+
+    /* Eduki nagusia / Layout principal */
+    .app-layout {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 60px);
+      position: relative;
+    }
+
+    /* Maparen eremua / Área del mapa */
     .map-container {
-      width: 100%;
-      max-width: 900px;
-      background: white;
-      padding: 2rem;
+      flex: 1;
+      background: #ffffff;
+      margin: 1rem;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       display: flex;
       justify-content: center;
       align-items: center;
+      padding: 1rem;
+      overflow: hidden;
+      margin-right: calc(var(--sidebar-width) + 1rem); /* Espacio reservado para el panel derecho */
     }
 
-    /* Estilos dinámicos para los elementos vectoriales del mapa.svg */
     .map-container svg {
       width: 100%;
-      height: auto;
-      max-height: 70vh;
+      height: 100%;
+      max-height: 80vh;
     }
 
+    /* Estilos vectoriales del SVG */
     .map-container svg path, 
     .map-container svg polygon, 
     .map-container svg g {
       cursor: pointer;
-      transition: fill 0.2s ease, stroke 0.2s ease, transform 0.2s ease;
+      transition: fill 0.2s ease, stroke 0.2s ease;
     }
 
-    /* Efecto al pasar el ratón por un municipio */
     .map-container svg path:hover, 
     .map-container svg polygon:hover {
       fill: var(--hover-color) !important;
@@ -93,45 +88,31 @@
       stroke-width: 1.5px !important;
     }
 
-    /* Menú Lateral (Sidebar) */
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: calc(-1 * var(--sidebar-width));
+    /* Panel Fijo en la Derecha (Eskuin-panela) */
+    .sidebar-fixed {
       width: var(--sidebar-width);
-      height: 100%;
+      height: calc(100vh - 60px);
+      position: fixed;
+      top: 60px;
+      right: 0;
       background-color: #ffffff;
-      box-shadow: 2px 0 12px rgba(0,0,0,0.15);
-      transition: left 0.3s ease-in-out;
-      z-index: 100;
+      border-left: 1px solid #e2e8f0;
+      box-shadow: -2px 0 10px rgba(0,0,0,0.03);
       padding: 1.5rem;
       display: flex;
       flex-direction: column;
-    }
-
-    .sidebar.open {
-      left: 0;
+      z-index: 20;
     }
 
     .sidebar-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid var(--bg-color);
+      padding-bottom: 0.75rem;
     }
 
-    .close-btn {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: #888;
-    }
-
-    .close-btn:hover {
-      color: #000;
+    .sidebar-header h2 {
+      font-size: 1.3rem;
+      color: var(--primary-color);
     }
 
     .sidebar-content p {
@@ -139,115 +120,116 @@
       line-height: 1.6;
     }
 
-    /* Capa de fondo oscuro al abrir el menú */
-    .overlay {
+    /* Tooltip Flotante (Etiqueta flotante al pasar el ratón) */
+    .map-tooltip {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.4);
-      opacity: 0;
+      background-color: rgba(44, 62, 80, 0.9);
+      color: #ffffff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
       pointer-events: none;
-      transition: opacity 0.3s ease;
-      z-index: 90;
+      opacity: 0;
+      transition: opacity 0.15s ease, transform 0.05s ease;
+      z-index: 1000;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
 
-    .overlay.active {
+    .map-tooltip.visible {
       opacity: 1;
-      pointer-events: auto;
     }
   </style>
 </head>
 <body>
 
-  <!-- Encabezado con Botón del Menú -->
+  <!-- Encabezado -->
   <header class="header">
-    <button class="menu-btn" id="openMenu" aria-label="Abrir Menú">☰</button>
-    <h1>Gipuzkoa Interactiva</h1>
+    <h1>Gipuzkoako Mapa Interaktiboa</h1>
   </header>
 
-  <!-- Panel Lateral -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <h2 id="sidebarTitle">Información</h2>
-      <button class="close-btn" id="closeMenu" aria-label="Cerrar Menú">&times;</button>
-    </div>
-    <div class="sidebar-content" id="sidebarContent">
-      <p>Selecciona una zona o municipio del mapa para abrir los detalles.</p>
-    </div>
-  </aside>
+  <div class="app-layout">
+    <!-- Contenedor donde se inyectará mapa.svg -->
+    <main class="map-container" id="mapContainer">
+      <p>Mapa kargatzen...</p>
+    </main>
 
-  <!-- Capa oscura de fondo -->
-  <div class="overlay" id="overlay"></div>
+    <!-- Panel Lateral Fijo en la Derecha -->
+    <aside class="sidebar-fixed">
+      <div class="sidebar-header">
+        <h2 id="sidebarTitle">Informazioa</h2>
+      </div>
+      <div class="sidebar-content" id="sidebarContent">
+        <p>Egin klik mapako udalerri batean informazio xehea hemen ikusteko.</p>
+      </div>
+    </aside>
+  </div>
 
-  <!-- Contenedor donde se inyectará mapa.svg -->
-  <main class="main-content">
-    <div class="map-container" id="mapContainer">
-      <p>Cargando mapa...</p>
-    </div>
-  </main>
+  <!-- Etiqueta Tooltip Flotante -->
+  <div class="map-tooltip" id="mapTooltip"></div>
 
   <script>
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
-    const openMenuBtn = document.getElementById('openMenu');
-    const closeMenuBtn = document.getElementById('closeMenu');
     const sidebarTitle = document.getElementById('sidebarTitle');
     const sidebarContent = document.getElementById('sidebarContent');
     const mapContainer = document.getElementById('mapContainer');
+    const tooltip = document.getElementById('mapTooltip');
 
-    // Control del Menú Lateral
-    function openSidebar() {
-      sidebar.classList.add('open');
-      overlay.classList.add('active');
-    }
+    // Diccionario de equivalencias (Opcional: puedes asignar nombres formateados a tus IDs)
+    const udalerriIzenak = {
+      // "path_id": "Nombre Formateado"
+    };
 
-    function closeSidebar() {
-      sidebar.classList.remove('open');
-      overlay.classList.remove('active');
-    }
-
-    openMenuBtn.addEventListener('click', openSidebar);
-    closeMenuBtn.addEventListener('click', closeSidebar);
-    overlay.addEventListener('click', closeSidebar);
-
-    // Cargar dinámicamente mapa.svg desde la raíz del proyecto
+    // Cargar dinámicamente mapa.svg desde el repositorio
     fetch('mapa.svg')
       .then(response => {
         if (!response.ok) {
-          throw new Error('No se pudo encontrar el archivo mapa.svg');
+          throw new Error('Ez da mapa.svg fitxategia aurkitu');
         }
         return response.text();
       })
       .then(svgData => {
-        // Inyectar el código SVG dentro del contenedor
+        // Inyectar el código vectorial
         mapContainer.innerHTML = svgData;
 
-        // Seleccionar todos los trazados del SVG
+        // Seleccionar elementos trazados
         const regions = mapContainer.querySelectorAll('path, polygon');
 
         regions.forEach((region, index) => {
-          // Detectar el nombre o ID de cada municipio si existe en el SVG
-          const name = region.getAttribute('name') || 
-                       region.getAttribute('id') || 
-                       region.getAttribute('data-name') || 
-                       `Zona ${index + 1}`;
+          // Obtener nombre del atributo del SVG (id, name, data-name) o usar índice provisional
+          const rawId = region.getAttribute('data-name') || 
+                        region.getAttribute('name') || 
+                        region.getAttribute('id') || 
+                        `Udalerria ${index + 1}`;
 
+          const izena = udalerriIzenak[rawId] || rawId;
+
+          // 1. Evento HOVER: Mostrar y mover Tooltip flotante
+          region.addEventListener('mousemove', (e) => {
+            tooltip.textContent = izena;
+            tooltip.style.left = `${e.clientX + 12}px`;
+            tooltip.style.top = `${e.clientY + 12}px`;
+            tooltip.classList.add('visible');
+          });
+
+          region.addEventListener('mouseleave', () => {
+            tooltip.classList.remove('visible');
+          });
+
+          // 2. Evento CLICK: Mostrar información en el panel fijo lateral
           region.addEventListener('click', () => {
-            sidebarTitle.textContent = name;
+            sidebarTitle.textContent = izena;
             sidebarContent.innerHTML = `
-              <p>Has seleccionado <strong>${name}</strong>.</p>
+              <p>Hautatutako udalerria: <strong>${izena}</strong></p>
               <br>
-              <p>Aquí puedes añadir cualquier contenido personalizado sobre esta zona de Gipuzkoa.</p>
+              <p>Hemen udalerri honi buruzko edukia edo datuak jar ditzakezu.</p>
             `;
-            openSidebar();
           });
         });
       })
       .catch(error => {
         console.error(error);
-        mapContainer.innerHTML = `<p style="color:red;">Error al cargar el archivo mapa.svg. Asegúrate de que está subido en la misma carpeta que index.html.</p>`;
+        mapContainer.innerHTML = `<p style="color:red;">Errorea mapa.svg kargatzean. Ziurtatu fitxategia index.html doan karpeta berean dagoela.</p>`;
       });
   </script>
 </body>
