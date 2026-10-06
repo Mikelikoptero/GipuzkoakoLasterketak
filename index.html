@@ -63,6 +63,7 @@
       align-items: center;
       gap: 0.75rem;
       position: relative;
+      width: 100%;
     }
 
     .search-wrapper {
@@ -289,28 +290,27 @@
       opacity: 1;
     }
 
-    /* 📱 Adaptación para móviles */
+    /* 📱 Adaptación móvil con reordenación vertical */
     @media (max-width: 768px) {
       body {
-        overflow: auto;
+        overflow-y: auto;
       }
 
       .header {
         height: auto;
         padding: 0.75rem;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-      }
-
-      .header-controls {
-        width: 100%;
+        flex-direction: row;
         justify-content: space-between;
       }
 
+      .header-controls {
+        width: auto;
+      }
+
       .search-wrapper {
-        flex: 1;
-        margin-right: 0.5rem;
+        width: 100%;
+        margin-bottom: 0.75rem;
+        order: 2; /* 2º LUGAR EN MÓVIL: Buscador */
       }
 
       .search-input {
@@ -321,44 +321,43 @@
         width: 100%;
       }
 
-      /* La lista pasa a ser un desplegable absoluto en móvil */
-      .list-container {
-        display: none;
-        position: absolute;
-        top: calc(100% + 8px);
-        left: 0;
-        width: calc(100vw - 1.5rem);
-        max-height: 50vh;
-        z-index: 999;
-        border-radius: 8px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        border: 1px solid #cbd5e1;
-      }
-
-      .list-container.open {
-        display: flex !important;
-      }
-
       .app-layout {
         flex-direction: column;
         height: auto;
         overflow: visible;
+        padding: 0.75rem;
+      }
+
+      /* 1º LUGAR EN MÓVIL: Información del pueblo */
+      .sidebar-fixed {
+        order: 1;
+        width: 100%;
+        height: auto;
+        border-left: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        padding: 1.25rem;
+        margin-bottom: 1rem;
       }
 
       .main-area {
-        padding: 0.75rem;
-        justify-content: center;
+        order: 2;
+        padding: 0;
+        flex-direction: column;
         height: auto;
-        min-height: 40vh;
       }
 
-      .sidebar-fixed {
+      /* 3º LUGAR EN MÓVIL: Lista de pueblos */
+      .list-container {
+        order: 3;
         width: 100%;
-        height: auto;
-        min-height: 40vh;
-        border-left: none;
-        border-top: 1px solid #e2e8f0;
-        padding: 1.5rem;
+        max-height: 50vh;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      }
+
+      .map-container {
+        order: 3;
+        width: 100%;
       }
 
       .map-container svg {
@@ -374,10 +373,6 @@
   <header class="header">
     <h1>Gipuzkoa</h1>
     <div class="header-controls">
-      <div class="search-wrapper" id="searchWrapper">
-        <input type="text" id="searchInput" class="search-input" placeholder="Bilatu udalerria..." autocomplete="off">
-      </div>
-
       <div class="view-toggle">
         <button class="toggle-btn" id="btnMap">Mapa</button>
         <button class="toggle-btn active" id="btnList">Zerrenda</button>
@@ -386,20 +381,7 @@
   </header>
 
   <div class="app-layout">
-    <!-- Área principal -->
-    <div class="main-area" id="mainArea">
-      <!-- Mapa -->
-      <main class="map-container" id="mapContainer">
-        <p>Mapa kargatzen...</p>
-      </main>
-
-      <!-- Lista principal -->
-      <div class="list-container" id="listContainer">
-        <ul class="udalerri-ul" id="udalerriUl"></ul>
-      </div>
-    </div>
-
-    <!-- Panel Lateral Protagonista -->
+    <!-- Panel Lateral con la información (1º en móvil) -->
     <aside class="sidebar-fixed">
       <div class="sidebar-header">
         <h2 id="sidebarTitle">Aukeratu udalerria</h2>
@@ -408,6 +390,24 @@
         <p>Egin klik mapako edo zerrendako udalerri batean haren datuak ikusteko.</p>
       </div>
     </aside>
+
+    <!-- Área principal con buscador y lista (2º y 3º en móvil) -->
+    <div class="main-area" id="mainArea">
+      <!-- Buscador (2º en móvil) -->
+      <div class="search-wrapper" id="searchWrapper">
+        <input type="text" id="searchInput" class="search-input" placeholder="Bilatu udalerria..." autocomplete="off">
+      </div>
+
+      <!-- Mapa (opcional según vista) -->
+      <main class="map-container" id="mapContainer">
+        <p>Mapa kargatzen...</p>
+      </main>
+
+      <!-- Lista principales (3º en móvil) -->
+      <div class="list-container" id="listContainer">
+        <ul class="udalerri-ul" id="udalerriUl"></ul>
+      </div>
+    </div>
   </div>
 
   <div class="map-tooltip" id="mapTooltip"></div>
@@ -419,8 +419,6 @@
     const listContainer = document.getElementById('listContainer');
     const udalerriUl = document.getElementById('udalerriUl');
     const searchInput = document.getElementById('searchInput');
-    const searchWrapper = document.getElementById('searchWrapper');
-    const mainArea = document.getElementById('mainArea');
     const tooltip = document.getElementById('mapTooltip');
 
     const btnMap = document.getElementById('btnMap');
@@ -541,10 +539,6 @@
         sidebarTitle.textContent = rawId;
         sidebarContent.innerHTML = `<p>Ez dago informazio gehigarririk sartuta.</p>`;
       }
-
-      if (isMobile()) {
-        listContainer.classList.remove('open');
-      }
     }
 
     // Cargar SVG
@@ -607,26 +601,10 @@
       });
     }
 
-    // Gestionar la ubicación de la lista según tamaño de pantalla
-    function updateLayoutForDevice() {
-      if (isMobile()) {
-        searchWrapper.appendChild(listContainer);
-      } else {
-        mainArea.appendChild(listContainer);
-        listContainer.classList.remove('open');
-      }
-    }
-
-    // Eventos del buscador
-    searchInput.addEventListener('focus', () => {
-      if (isMobile()) listContainer.classList.add('open');
-    });
-
+    // Buscador en tiempo real
     searchInput.addEventListener('input', (e) => {
       const term = e.target.value;
       renderList(term);
-
-      if (isMobile()) listContainer.classList.add('open');
 
       if (term.trim() !== "") {
         const matchKey = Object.keys(udalerriDatuak).find(k => 
@@ -638,40 +616,21 @@
       }
     });
 
-    // Clic fuera para ocultar en móvil
-    document.addEventListener('click', (e) => {
-      if (isMobile() && !searchWrapper.contains(e.target)) {
-        listContainer.classList.remove('open');
-      }
-    });
-
     renderList();
-    updateLayoutForDevice();
-    window.addEventListener('resize', updateLayoutForDevice);
 
     // Toggle entre Vistas
     btnMap.addEventListener('click', () => {
       btnMap.classList.add('active');
       btnList.classList.remove('active');
       mapContainer.style.display = 'flex';
-      
-      if (!isMobile()) {
-        listContainer.style.display = 'none';
-      } else {
-        listContainer.classList.remove('open');
-      }
+      listContainer.style.display = 'none';
     });
 
     btnList.addEventListener('click', () => {
       btnList.classList.add('active');
       btnMap.classList.remove('active');
       mapContainer.style.display = 'none';
-
-      if (!isMobile()) {
-        listContainer.style.display = 'flex';
-      } else {
-        listContainer.classList.add('open');
-      }
+      listContainer.style.display = 'flex';
     });
   </script>
 </body>
