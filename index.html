@@ -11,9 +11,9 @@
       --primary-color: #2c3e50;
       
       /* 🎨 PALETA DE COLORES */
-      --map-base-color: #a8e6cf;    /* Verde pastel de base */
-      --map-hover-color: #3b9a6d;   /* Verde más oscuro (hover) */
-      --map-border-color: #000000;  /* Líneas delimitadoras negras */
+      --map-base-color: #a8e6cf;    /* Verde pastel base */
+      --map-hover-color: #3b9a6d;   /* Verde oscuro hover */
+      --map-border-color: #000000;  /* Bordes negros */
     }
 
     * {
@@ -82,7 +82,7 @@
       display: block;
     }
 
-    /* 🛠️ SOLUCIÓN A LOS BORDES: Aplicamos estilos solo a trazados individuales (path/polygon) */
+    /* 🛠️ ESTILOS SVG LIMPIOS Y COMPATIBLES CON EVENTOS */
     .map-container svg path, 
     .map-container svg polygon {
       fill: var(--map-base-color) !important;
@@ -90,28 +90,26 @@
       stroke-width: 1px !important;
       stroke-linecap: round;
       stroke-linejoin: round;
-      vector-effect: non-scaling-stroke; /* Mantiene el grosor de línea limpio al escalar */
-      cursor: pointer;
+      vector-effect: non-scaling-stroke;
+      paint-order: stroke fill; /* Asegura que el relleno no tape la mitad del borde */
+      cursor: pointer !important;
+      pointer-events: visiblePainted !important; /* Garantiza la detección del clic */
       transition: fill 0.2s ease, stroke-width 0.2s ease;
     }
 
-    /* Evitamos que las capas/grupos generales tapen las líneas */
     .map-container svg g {
       fill: none;
       stroke: none;
     }
 
-    /* Hover: Eleva visualmente el trazado que estás sobrevolando */
+    /* Hover */
     .map-container svg path:hover, 
     .map-container svg polygon:hover {
       fill: var(--map-hover-color) !important;
-      stroke: var(--map-border-color) !important;
       stroke-width: 2px !important;
-      /* Reordena el elemento hover hacia el frente para evitar solapamientos */
-      paint-order: stroke fill;
     }
 
-    /* Panel Fijo en la Derecha */
+    /* Panel Fijo Lateral */
     .sidebar-fixed {
       width: var(--sidebar-width);
       height: 100%;
@@ -201,6 +199,7 @@
       .then(svgData => {
         mapContainer.innerHTML = svgData;
 
+        // Seleccionar tanto paths como polygons
         const regions = mapContainer.querySelectorAll('path, polygon');
 
         regions.forEach((region, index) => {
@@ -209,11 +208,7 @@
                         region.getAttribute('id') || 
                         `Udalerria ${index + 1}`;
 
-          // Mueve el path activado al final dentro del SVG para dibujarse por encima
-          region.addEventListener('mouseenter', () => {
-            region.parentNode.appendChild(region);
-          });
-
+          // Hover: Mover Tooltip
           region.addEventListener('mousemove', (e) => {
             tooltip.textContent = rawId;
             tooltip.style.left = `${e.clientX + 12}px`;
@@ -225,7 +220,9 @@
             tooltip.classList.remove('visible');
           });
 
-          region.addEventListener('click', () => {
+          // Click: Actualizar Panel Lateral
+          region.addEventListener('click', (e) => {
+            e.stopPropagation();
             sidebarTitle.textContent = rawId;
             sidebarContent.innerHTML = `
               <p>Hautatutako udalerria: <strong>${rawId}</strong></p>
