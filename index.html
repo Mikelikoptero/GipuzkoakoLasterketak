@@ -127,6 +127,7 @@
       align-items: center;
       padding: 1.5rem;
       overflow-y: auto;
+      height: 100%;
     }
 
     /* Vista Mapa */
@@ -150,12 +151,13 @@
       display: block;
     }
 
-    /* Vista Lista */
+    /* Vista Lista (Escritorio) */
     .list-container {
       display: flex;
       width: 100%;
       max-width: 600px;
       height: 100%;
+      max-height: calc(100vh - 110px);
       background: #ffffff;
       padding: 1.25rem;
       border-radius: 12px;
@@ -167,6 +169,7 @@
       list-style: none;
       overflow-y: auto;
       flex: 1;
+      padding-right: 5px;
     }
 
     .udalerri-li {
@@ -286,7 +289,7 @@
       opacity: 1;
     }
 
-    /* 📱 Adaptación móvil con desplegable desde el buscador */
+    /* 📱 Adaptación para móviles */
     @media (max-width: 768px) {
       body {
         overflow: auto;
@@ -318,15 +321,14 @@
         width: 100%;
       }
 
-      /* Lista desplegable flotante en móvil */
+      /* La lista pasa a ser un desplegable absoluto en móvil */
       .list-container {
         display: none;
         position: absolute;
-        top: calc(100% + 6px);
+        top: calc(100% + 8px);
         left: 0;
-        width: 100vw;
-        max-width: calc(100vw - 1.5rem);
-        max-height: 55vh;
+        width: calc(100vw - 1.5rem);
+        max-height: 50vh;
         z-index: 999;
         border-radius: 8px;
         box-shadow: 0 10px 25px rgba(0,0,0,0.2);
@@ -372,13 +374,8 @@
   <header class="header">
     <h1>Gipuzkoa</h1>
     <div class="header-controls">
-      <div class="search-wrapper">
+      <div class="search-wrapper" id="searchWrapper">
         <input type="text" id="searchInput" class="search-input" placeholder="Bilatu udalerria..." autocomplete="off">
-        
-        <!-- Lista / Desplegable integrado -->
-        <div class="list-container" id="listContainer">
-          <ul class="udalerri-ul" id="udalerriUl"></ul>
-        </div>
       </div>
 
       <div class="view-toggle">
@@ -390,11 +387,16 @@
 
   <div class="app-layout">
     <!-- Área principal -->
-    <div class="main-area">
+    <div class="main-area" id="mainArea">
       <!-- Mapa -->
       <main class="map-container" id="mapContainer">
         <p>Mapa kargatzen...</p>
       </main>
+
+      <!-- Lista principal -->
+      <div class="list-container" id="listContainer">
+        <ul class="udalerri-ul" id="udalerriUl"></ul>
+      </div>
     </div>
 
     <!-- Panel Lateral Protagonista -->
@@ -417,12 +419,13 @@
     const listContainer = document.getElementById('listContainer');
     const udalerriUl = document.getElementById('udalerriUl');
     const searchInput = document.getElementById('searchInput');
+    const searchWrapper = document.getElementById('searchWrapper');
+    const mainArea = document.getElementById('mainArea');
     const tooltip = document.getElementById('mapTooltip');
 
     const btnMap = document.getElementById('btnMap');
     const btnList = document.getElementById('btnList');
 
-    let currentView = 'list'; // 'map' edo 'list'
     const isMobile = () => window.innerWidth <= 768;
 
     /* 📌 UDALERRIEN DATU-BASEA (88 Udalerri) */
@@ -604,18 +607,26 @@
       });
     }
 
-    // Mostrar desplegable al interactuar con el buscador
-    function openDropdown() {
-      listContainer.classList.add('open');
+    // Gestionar la ubicación de la lista según tamaño de pantalla
+    function updateLayoutForDevice() {
+      if (isMobile()) {
+        searchWrapper.appendChild(listContainer);
+      } else {
+        mainArea.appendChild(listContainer);
+        listContainer.classList.remove('open');
+      }
     }
 
-    searchInput.addEventListener('focus', openDropdown);
-    searchInput.addEventListener('click', openDropdown);
+    // Eventos del buscador
+    searchInput.addEventListener('focus', () => {
+      if (isMobile()) listContainer.classList.add('open');
+    });
 
     searchInput.addEventListener('input', (e) => {
       const term = e.target.value;
       renderList(term);
-      openDropdown();
+
+      if (isMobile()) listContainer.classList.add('open');
 
       if (term.trim() !== "") {
         const matchKey = Object.keys(udalerriDatuak).find(k => 
@@ -627,32 +638,40 @@
       }
     });
 
-    // Cerrar desplegable si se hace clic fuera
+    // Clic fuera para ocultar en móvil
     document.addEventListener('click', (e) => {
-      if (!searchInput.contains(e.target) && !listContainer.contains(e.target)) {
-        if (isMobile() || currentView === 'map') {
-          listContainer.classList.remove('open');
-        }
+      if (isMobile() && !searchWrapper.contains(e.target)) {
+        listContainer.classList.remove('open');
       }
     });
 
     renderList();
+    updateLayoutForDevice();
+    window.addEventListener('resize', updateLayoutForDevice);
 
     // Toggle entre Vistas
     btnMap.addEventListener('click', () => {
-      currentView = 'map';
       btnMap.classList.add('active');
       btnList.classList.remove('active');
       mapContainer.style.display = 'flex';
-      listContainer.classList.remove('open');
+      
+      if (!isMobile()) {
+        listContainer.style.display = 'none';
+      } else {
+        listContainer.classList.remove('open');
+      }
     });
 
     btnList.addEventListener('click', () => {
-      currentView = 'list';
       btnList.classList.add('active');
       btnMap.classList.remove('active');
       mapContainer.style.display = 'none';
-      listContainer.classList.add('open');
+
+      if (!isMobile()) {
+        listContainer.style.display = 'flex';
+      } else {
+        listContainer.classList.add('open');
+      }
     });
   </script>
 </body>
