@@ -7,13 +7,19 @@
   <style>
     :root {
       --bg-color: #f4f6f8;
-      --sidebar-width: 300px;
+      --sidebar-width: 420px; /* Panel más ancho para darle protagonismo */
       --primary-color: #2c3e50;
       
       /* 🎨 PALETA DE COLORES */
       --map-base-color: #a8e6cf;    /* Verde pastel base */
       --map-hover-color: #3b9a6d;   /* Verde oscuro hover */
       --map-border-color: #000000;  /* Bordes negros */
+    }
+
+    @media (min-width: 1400px) {
+      :root {
+        --sidebar-width: 480px; /* En pantallas amplias destaca aún más */
+      }
     }
 
     * {
@@ -54,12 +60,13 @@
       height: calc(100vh - 60px);
     }
 
+    /* Área del mapa desplazada a la izquierda */
     .map-area {
       flex: 1;
       display: flex;
-      justify-content: center;
+      justify-content: flex-start; /* Alineado a la izquierda */
       align-items: center;
-      padding: 1rem;
+      padding: 1.5rem 1.5rem 1.5rem 3rem; /* Margen mayor a la izquierda */
     }
 
     .map-container {
@@ -77,12 +84,12 @@
     .map-container svg {
       width: auto;
       height: auto;
-      max-width: calc(100vw - var(--sidebar-width) - 4rem);
+      max-width: calc(100vw - var(--sidebar-width) - 6rem);
       max-height: calc(100vh - 120px);
       display: block;
     }
 
-    /* 🛠️ ESTILOS SVG LIMPIOS Y COMPATIBLES CON EVENTOS */
+    /* Estilos del SVG */
     .map-container svg path, 
     .map-container svg polygon {
       fill: var(--map-base-color) !important;
@@ -91,9 +98,9 @@
       stroke-linecap: round;
       stroke-linejoin: round;
       vector-effect: non-scaling-stroke;
-      paint-order: stroke fill; /* Asegura que el relleno no tape la mitad del borde */
+      paint-order: stroke fill;
       cursor: pointer !important;
-      pointer-events: visiblePainted !important; /* Garantiza la detección del clic */
+      pointer-events: visiblePainted !important;
       transition: fill 0.2s ease, stroke-width 0.2s ease;
     }
 
@@ -102,40 +109,35 @@
       stroke: none;
     }
 
-    /* Hover */
     .map-container svg path:hover, 
     .map-container svg polygon:hover {
       fill: var(--map-hover-color) !important;
       stroke-width: 2px !important;
     }
 
-    /* Panel Fijo Lateral */
+    /* Panel Fijo Lateral (Menú con más peso visual) */
     .sidebar-fixed {
       width: var(--sidebar-width);
       height: 100%;
       background-color: #ffffff;
       border-left: 1px solid #e2e8f0;
-      box-shadow: -2px 0 10px rgba(0,0,0,0.03);
-      padding: 1.5rem;
+      box-shadow: -4px 0 16px rgba(0,0,0,0.05);
+      padding: 2rem;
       display: flex;
       flex-direction: column;
       z-index: 20;
     }
 
     .sidebar-header {
-      margin-bottom: 1.5rem;
       border-bottom: 2px solid var(--bg-color);
-      padding-bottom: 0.75rem;
+      padding-bottom: 1rem;
     }
 
     .sidebar-header h2 {
-      font-size: 1.3rem;
+      font-size: 1.6rem;
       color: var(--primary-color);
-    }
-
-    .sidebar-content p {
-      color: #555;
-      line-height: 1.6;
+      font-weight: 700;
+      word-break: break-word;
     }
 
     /* Tooltip */
@@ -173,12 +175,10 @@
       </main>
     </div>
 
+    <!-- Panel Lateral Protagonista -->
     <aside class="sidebar-fixed">
       <div class="sidebar-header">
-        <h2 id="sidebarTitle">Informazioa</h2>
-      </div>
-      <div class="sidebar-content" id="sidebarContent">
-        <p>Egin klik mapako udalerri batean informazio xehea hemen ikusteko.</p>
+        <h2 id="sidebarTitle">Aukeratu udalerria</h2>
       </div>
     </aside>
   </div>
@@ -187,7 +187,6 @@
 
   <script>
     const sidebarTitle = document.getElementById('sidebarTitle');
-    const sidebarContent = document.getElementById('sidebarContent');
     const mapContainer = document.getElementById('mapContainer');
     const tooltip = document.getElementById('mapTooltip');
 
@@ -199,7 +198,6 @@
       .then(svgData => {
         mapContainer.innerHTML = svgData;
 
-        // Seleccionar tanto paths como polygons
         const regions = mapContainer.querySelectorAll('path, polygon');
 
         regions.forEach((region, index) => {
@@ -220,15 +218,10 @@
             tooltip.classList.remove('visible');
           });
 
-          // Click: Actualizar Panel Lateral
+          // Click: Actualizar únicamente el título en el menú derecho
           region.addEventListener('click', (e) => {
             e.stopPropagation();
             sidebarTitle.textContent = rawId;
-            sidebarContent.innerHTML = `
-              <p>Hautatutako udalerria: <strong>${rawId}</strong></p>
-              <br>
-              <p>Hemen udalerri honi buruzko edukia edo datuak jar ditzakezu.</p>
-            `;
           });
         });
       })
