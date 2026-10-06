@@ -63,26 +63,6 @@
       align-items: center;
       gap: 0.75rem;
       position: relative;
-      width: 100%;
-    }
-
-    .search-wrapper {
-      position: relative;
-    }
-
-    .search-input {
-      width: 240px;
-      padding: 6px 12px;
-      font-size: 0.85rem;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      outline: none;
-      transition: border-color 0.2s, width 0.2s;
-    }
-
-    .search-input:focus {
-      border-color: var(--primary-color);
-      width: 280px;
     }
 
     .view-toggle {
@@ -124,16 +104,41 @@
     .main-area {
       flex: 1;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
       padding: 1.5rem;
       overflow-y: auto;
       height: 100%;
+      gap: 1rem;
+    }
+
+    /* Buscador situado encima del mapa y la lista */
+    .search-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 16px;
+      font-size: 0.95rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      outline: none;
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     /* Vista Mapa */
     .map-container {
-      display: none;
+      display: flex;
       background: #ffffff;
       padding: 0.75rem;
       border-radius: 8px;
@@ -148,17 +153,17 @@
       width: auto;
       height: auto;
       max-width: calc(100vw - var(--sidebar-width) - 5rem);
-      max-height: calc(100vh - 120px);
+      max-height: calc(100vh - 180px);
       display: block;
     }
 
     /* Vista Lista (Escritorio) */
     .list-container {
-      display: flex;
+      display: none;
       width: 100%;
       max-width: 600px;
       height: 100%;
-      max-height: calc(100vh - 110px);
+      max-height: calc(100vh - 180px);
       background: #ffffff;
       padding: 1.25rem;
       border-radius: 12px;
@@ -290,7 +295,7 @@
       opacity: 1;
     }
 
-    /* 📱 Adaptación móvil con reordenación vertical */
+    /* 📱 Adaptación móvil con orden vertical estricto */
     @media (max-width: 768px) {
       body {
         overflow-y: auto;
@@ -303,29 +308,12 @@
         justify-content: space-between;
       }
 
-      .header-controls {
-        width: auto;
-      }
-
-      .search-wrapper {
-        width: 100%;
-        margin-bottom: 0.75rem;
-        order: 2; /* 2º LUGAR EN MÓVIL: Buscador */
-      }
-
-      .search-input {
-        width: 100%;
-      }
-
-      .search-input:focus {
-        width: 100%;
-      }
-
       .app-layout {
         flex-direction: column;
         height: auto;
         overflow: visible;
         padding: 0.75rem;
+        gap: 1rem;
       }
 
       /* 1º LUGAR EN MÓVIL: Información del pueblo */
@@ -337,32 +325,38 @@
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         padding: 1.25rem;
-        margin-bottom: 1rem;
       }
 
       .main-area {
         order: 2;
         padding: 0;
-        flex-direction: column;
-        height: auto;
-      }
-
-      /* 3º LUGAR EN MÓVIL: Lista de pueblos */
-      .list-container {
-        order: 3;
         width: 100%;
-        max-height: 50vh;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        height: auto;
+        gap: 1rem;
       }
 
+      /* 2º LUGAR EN MÓVIL: Buscador */
+      .search-wrapper {
+        order: 1;
+        width: 100%;
+      }
+
+      /* 3º LUGAR EN MÓVIL: Mapa o Lista */
       .map-container {
-        order: 3;
+        order: 2;
         width: 100%;
       }
 
       .map-container svg {
         max-width: 100%;
-        max-height: 40vh;
+        max-height: 45vh;
+      }
+
+      .list-container {
+        order: 2;
+        width: 100%;
+        max-height: 50vh;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       }
     }
   </style>
@@ -374,14 +368,14 @@
     <h1>Gipuzkoa</h1>
     <div class="header-controls">
       <div class="view-toggle">
-        <button class="toggle-btn" id="btnMap">Mapa</button>
-        <button class="toggle-btn active" id="btnList">Zerrenda</button>
+        <button class="toggle-btn active" id="btnMap">Mapa</button>
+        <button class="toggle-btn" id="btnList">Zerrenda</button>
       </div>
     </div>
   </header>
 
   <div class="app-layout">
-    <!-- Panel Lateral con la información (1º en móvil) -->
+    <!-- 1º EN MÓVIL: Panel Lateral con la información -->
     <aside class="sidebar-fixed">
       <div class="sidebar-header">
         <h2 id="sidebarTitle">Aukeratu udalerria</h2>
@@ -391,19 +385,19 @@
       </div>
     </aside>
 
-    <!-- Área principal con buscador y lista (2º y 3º en móvil) -->
+    <!-- Área principal -->
     <div class="main-area" id="mainArea">
-      <!-- Buscador (2º en móvil) -->
+      <!-- 2º EN MÓVIL: Buscador situado encima del mapa/lista -->
       <div class="search-wrapper" id="searchWrapper">
         <input type="text" id="searchInput" class="search-input" placeholder="Bilatu udalerria..." autocomplete="off">
       </div>
 
-      <!-- Mapa (opcional según vista) -->
+      <!-- 3º EN MÓVIL: Mapa (activo por defecto) -->
       <main class="map-container" id="mapContainer">
         <p>Mapa kargatzen...</p>
       </main>
 
-      <!-- Lista principales (3º en móvil) -->
+      <!-- 3º EN MÓVIL: Lista -->
       <div class="list-container" id="listContainer">
         <ul class="udalerri-ul" id="udalerriUl"></ul>
       </div>
@@ -423,8 +417,6 @@
 
     const btnMap = document.getElementById('btnMap');
     const btnList = document.getElementById('btnList');
-
-    const isMobile = () => window.innerWidth <= 768;
 
     /* 📌 UDALERRIEN DATU-BASEA (88 Udalerri) */
     const udalerriDatuak = {
