@@ -7,7 +7,7 @@
   <style>
     :root {
       --bg-color: #f4f6f8;
-      --sidebar-width: 420px;
+      --sidebar-width: 550px; /* Panel más ancho en ordenadores */
       --primary-color: #2c3e50;
       
       /* 🎨 PALETA DE COLORES */
@@ -19,7 +19,7 @@
 
     @media (min-width: 1400px) {
       :root {
-        --sidebar-width: 480px;
+        --sidebar-width: 650px; /* Amplio para monitores grandes */
       }
     }
 
@@ -38,64 +38,66 @@
       overflow: hidden;
     }
 
-    /* Goiburua con Buscador y Selectores */
+    /* Goiburua */
     .header {
-      padding: 0.5rem 1rem;
+      padding: 0.5rem 1.5rem;
       background-color: #ffffff;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
       z-index: 10;
-      min-height: 60px;
+      height: 60px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 0.75rem;
-      flex-wrap: wrap;
+      gap: 1rem;
     }
 
     .header-left {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      flex: 1;
-      min-width: 200px;
+      gap: 1.25rem;
     }
 
     .header h1 {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       color: var(--primary-color);
       white-space: nowrap;
     }
 
-    /* Buscador global en la cabecera */
+    /* Buscador y Toggle juntos */
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
     .search-input {
-      width: 100%;
-      max-width: 280px;
+      width: 240px;
       padding: 6px 12px;
       font-size: 0.85rem;
       border: 1px solid #cbd5e1;
       border-radius: 8px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, width 0.2s;
     }
 
     .search-input:focus {
       border-color: var(--primary-color);
+      width: 280px;
     }
 
-    /* Botones de cambio de vista */
     .view-toggle {
       display: flex;
       background: var(--bg-color);
       padding: 3px;
       border-radius: 8px;
       border: 1px solid #e2e8f0;
-      shrink: 0;
+      flex-shrink: 0;
     }
 
     .toggle-btn {
       border: none;
       background: none;
-      padding: 5px 10px;
+      padding: 5px 12px;
       font-size: 0.8rem;
       font-weight: 600;
       border-radius: 6px;
@@ -119,13 +121,13 @@
       overflow: hidden;
     }
 
-    /* Área izquierda (Contiene Mapa y Lista) */
+    /* Área izquierda del mapa */
     .main-area {
       flex: 1;
       display: flex;
-      justify-content: flex-start;
+      justify-content: center;
       align-items: center;
-      padding: 1rem 1rem 1rem 2rem;
+      padding: 1.5rem;
       overflow-y: auto;
     }
 
@@ -216,7 +218,7 @@
       background-color: #ffffff;
       border-left: 1px solid #e2e8f0;
       box-shadow: -4px 0 16px rgba(0,0,0,0.05);
-      padding: 1.5rem;
+      padding: 2.5rem;
       display: flex;
       flex-direction: column;
       z-index: 20;
@@ -225,12 +227,12 @@
 
     .sidebar-header {
       border-bottom: 2px solid var(--bg-color);
-      padding-bottom: 0.75rem;
-      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
     }
 
     .sidebar-header h2 {
-      font-size: 1.5rem;
+      font-size: 1.8rem;
       color: var(--primary-color);
       font-weight: 700;
       word-break: break-word;
@@ -239,10 +241,11 @@
     .sidebar-content {
       color: #4a5568;
       line-height: 1.6;
+      font-size: 1.05rem;
     }
 
     .sidebar-content h3 {
-      font-size: 1.1rem;
+      font-size: 1.25rem;
       margin: 0.5rem 0 0.8rem 0;
     }
 
@@ -284,7 +287,7 @@
       opacity: 1;
     }
 
-    /* 📱 Adaptación para móviles */
+    /* 📱 Adaptación móvil */
     @media (max-width: 768px) {
       body {
         overflow: auto;
@@ -293,6 +296,8 @@
       .header {
         height: auto;
         padding: 0.75rem;
+        flex-direction: column;
+        align-items: stretch;
       }
 
       .header-left {
@@ -300,9 +305,17 @@
         justify-content: space-between;
       }
 
+      .header-controls {
+        width: 100%;
+        justify-content: space-between;
+      }
+
       .search-input {
+        width: 100%;
         max-width: 100%;
-        order: 3;
+      }
+
+      .search-input:focus {
         width: 100%;
       }
 
@@ -325,6 +338,7 @@
         min-height: 40vh;
         border-left: none;
         border-top: 1px solid #e2e8f0;
+        padding: 1.5rem;
       }
 
       .map-container svg {
@@ -336,33 +350,37 @@
 </head>
 <body>
 
-  <!-- Goiburua con Buscador integrado -->
+  <!-- Goiburua -->
   <header class="header">
     <div class="header-left">
       <h1>Gipuzkoa</h1>
+    </div>
+    
+    <!-- Buscador seguido directamente del botón Mapa / Zerrenda -->
+    <div class="header-controls">
+      <input type="text" id="searchInput" class="search-input" placeholder="Bilatu udalerria...">
       <div class="view-toggle">
         <button class="toggle-btn active" id="btnMap">Mapa</button>
         <button class="toggle-btn" id="btnList">Zerrenda</button>
       </div>
     </div>
-    <input type="text" id="searchInput" class="search-input" placeholder="Bilatu udalerria...">
   </header>
 
   <div class="app-layout">
-    <!-- Área principal (Mapa o Lista) -->
+    <!-- Área principal -->
     <div class="main-area">
-      <!-- Contenedor Mapa -->
+      <!-- Mapa -->
       <main class="map-container" id="mapContainer">
         <p>Mapa kargatzen...</p>
       </main>
 
-      <!-- Contenedor Lista -->
+      <!-- Lista -->
       <div class="list-container" id="listContainer">
         <ul class="udalerri-ul" id="udalerriUl"></ul>
       </div>
     </div>
 
-    <!-- Panel Lateral de Información -->
+    <!-- Panel Lateral Protagonista -->
     <aside class="sidebar-fixed">
       <div class="sidebar-header">
         <h2 id="sidebarTitle">Aukeratu udalerria</h2>
@@ -564,7 +582,6 @@
       const term = e.target.value;
       renderList(term);
 
-      // Si busca mientras está en modo Mapa, selecciona automáticamente el primer resultado equivalente
       if (term.trim() !== "") {
         const matchKey = Object.keys(udalerriDatuak).find(k => 
           udalerriDatuak[k].titulua.toLowerCase().includes(term.toLowerCase())
