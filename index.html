@@ -38,42 +38,71 @@
       overflow: hidden;
     }
 
-    /* Goiburua */
+    /* Goiburua con Buscador y Selectores */
     .header {
-      padding: 0 1.5rem;
+      padding: 0.5rem 1rem;
       background-color: #ffffff;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
       z-index: 10;
-      height: 60px;
+      min-height: 60px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex: 1;
+      min-width: 200px;
     }
 
     .header h1 {
       font-size: 1.1rem;
       color: var(--primary-color);
+      white-space: nowrap;
     }
 
-    /* Botones de cambio de vista (Mapa / Lista) */
+    /* Buscador global en la cabecera */
+    .search-input {
+      width: 100%;
+      max-width: 280px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary-color);
+    }
+
+    /* Botones de cambio de vista */
     .view-toggle {
       display: flex;
       background: var(--bg-color);
       padding: 3px;
       border-radius: 8px;
       border: 1px solid #e2e8f0;
+      shrink: 0;
     }
 
     .toggle-btn {
       border: none;
       background: none;
-      padding: 6px 12px;
-      font-size: 0.85rem;
+      padding: 5px 10px;
+      font-size: 0.8rem;
       font-weight: 600;
       border-radius: 6px;
       cursor: pointer;
       color: #64748b;
       transition: all 0.2s ease;
+      white-space: nowrap;
     }
 
     .toggle-btn.active {
@@ -96,7 +125,7 @@
       display: flex;
       justify-content: flex-start;
       align-items: center;
-      padding: 1.5rem 1.5rem 1.5rem 3rem;
+      padding: 1rem 1rem 1rem 2rem;
       overflow-y: auto;
     }
 
@@ -115,37 +144,22 @@
     .map-container svg {
       width: auto;
       height: auto;
-      max-width: calc(100vw - var(--sidebar-width) - 6rem);
+      max-width: calc(100vw - var(--sidebar-width) - 5rem);
       max-height: calc(100vh - 120px);
       display: block;
     }
 
     /* Vista Lista */
     .list-container {
-      display: none; /* Oculta por defecto */
+      display: none;
       width: 100%;
       max-width: 600px;
       height: 100%;
       background: #ffffff;
-      padding: 1.5rem;
+      padding: 1.25rem;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       flex-direction: column;
-    }
-
-    .search-input {
-      width: 100%;
-      padding: 10px 14px;
-      font-size: 0.95rem;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .search-input:focus {
-      border-color: var(--primary-color);
     }
 
     .udalerri-ul {
@@ -202,7 +216,7 @@
       background-color: #ffffff;
       border-left: 1px solid #e2e8f0;
       box-shadow: -4px 0 16px rgba(0,0,0,0.05);
-      padding: 2rem;
+      padding: 1.5rem;
       display: flex;
       flex-direction: column;
       z-index: 20;
@@ -211,12 +225,12 @@
 
     .sidebar-header {
       border-bottom: 2px solid var(--bg-color);
-      padding-bottom: 1rem;
-      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      margin-bottom: 1.25rem;
     }
 
     .sidebar-header h2 {
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       color: var(--primary-color);
       font-weight: 700;
       word-break: break-word;
@@ -228,7 +242,7 @@
     }
 
     .sidebar-content h3 {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       margin: 0.5rem 0 0.8rem 0;
     }
 
@@ -270,41 +284,68 @@
       opacity: 1;
     }
 
-    /* Adaptación Móvil */
+    /* 📱 Adaptación para móviles */
     @media (max-width: 768px) {
+      body {
+        overflow: auto;
+      }
+
+      .header {
+        height: auto;
+        padding: 0.75rem;
+      }
+
+      .header-left {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .search-input {
+        max-width: 100%;
+        order: 3;
+        width: 100%;
+      }
+
       .app-layout {
         flex-direction: column;
+        height: auto;
+        overflow: visible;
       }
 
       .main-area {
-        padding: 1rem;
+        padding: 0.75rem;
         justify-content: center;
-        height: 50vh;
+        height: auto;
+        min-height: 45vh;
       }
 
       .sidebar-fixed {
         width: 100%;
-        height: 50vh;
+        height: auto;
+        min-height: 40vh;
         border-left: none;
         border-top: 1px solid #e2e8f0;
       }
 
       .map-container svg {
         max-width: 100%;
-        max-height: 40vh;
+        max-height: 45vh;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- Goiburua con Selector de Vista -->
+  <!-- Goiburua con Buscador integrado -->
   <header class="header">
-    <h1>Gipuzkoa</h1>
-    <div class="view-toggle">
-      <button class="toggle-btn active" id="btnMap">Mapa</button>
-      <button class="toggle-btn" id="btnList">Zerrenda</button>
+    <div class="header-left">
+      <h1>Gipuzkoa</h1>
+      <div class="view-toggle">
+        <button class="toggle-btn active" id="btnMap">Mapa</button>
+        <button class="toggle-btn" id="btnList">Zerrenda</button>
+      </div>
     </div>
+    <input type="text" id="searchInput" class="search-input" placeholder="Bilatu udalerria...">
   </header>
 
   <div class="app-layout">
@@ -315,9 +356,8 @@
         <p>Mapa kargatzen...</p>
       </main>
 
-      <!-- Contenedor Lista + Buscador -->
+      <!-- Contenedor Lista -->
       <div class="list-container" id="listContainer">
-        <input type="text" id="searchInput" class="search-input" placeholder="Bilatu udalerria...">
         <ul class="udalerri-ul" id="udalerriUl"></ul>
       </div>
     </div>
@@ -452,7 +492,6 @@
       "Leintz-Gatzaga": { titulua: "Leintz-Gatzaga", edukia: "" }
     };
 
-    // Función para mostrar datos de un municipio en el panel lateral
     function selectUdalerria(rawId) {
       if (udalerriDatuak[rawId]) {
         sidebarTitle.textContent = udalerriDatuak[rawId].titulua;
@@ -463,7 +502,7 @@
       }
     }
 
-    // Cargar mapa SVG
+    // Cargar SVG
     fetch('mapa.svg')
       .then(response => {
         if (!response.ok) throw new Error('Ez da mapa.svg aurkitu');
@@ -503,7 +542,7 @@
         mapContainer.innerHTML = `<p style="color:red;">Errorea mapa.svg kargatzean.</p>`;
       });
 
-    // Generar Lista interactiva con buscador
+    // Renderizar Lista
     function renderList(filter = "") {
       udalerriUl.innerHTML = "";
       const sortedKeys = Object.keys(udalerriDatuak).sort((a, b) => a.localeCompare(b));
@@ -520,13 +559,25 @@
       });
     }
 
+    // Filtro del buscador global
     searchInput.addEventListener('input', (e) => {
-      renderList(e.target.value);
+      const term = e.target.value;
+      renderList(term);
+
+      // Si busca mientras está en modo Mapa, selecciona automáticamente el primer resultado equivalente
+      if (term.trim() !== "") {
+        const matchKey = Object.keys(udalerriDatuak).find(k => 
+          udalerriDatuak[k].titulua.toLowerCase().includes(term.toLowerCase())
+        );
+        if (matchKey) {
+          selectUdalerria(matchKey);
+        }
+      }
     });
 
     renderList();
 
-    // Lógica para alternar vistas (Mapa / Lista)
+    // Toggle entre Vistas
     btnMap.addEventListener('click', () => {
       btnMap.classList.add('active');
       btnList.classList.remove('active');
