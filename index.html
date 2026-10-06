@@ -7,7 +7,7 @@
   <style>
     :root {
       --bg-color: #f4f6f8;
-      --sidebar-width: 420px; /* Panel más ancho para darle protagonismo */
+      --sidebar-width: 420px;
       --primary-color: #2c3e50;
       
       /* 🎨 PALETA DE COLORES */
@@ -18,7 +18,7 @@
 
     @media (min-width: 1400px) {
       :root {
-        --sidebar-width: 480px; /* En pantallas amplias destaca aún más */
+        --sidebar-width: 480px;
       }
     }
 
@@ -64,9 +64,9 @@
     .map-area {
       flex: 1;
       display: flex;
-      justify-content: flex-start; /* Alineado a la izquierda */
+      justify-content: flex-start;
       align-items: center;
-      padding: 1.5rem 1.5rem 1.5rem 3rem; /* Margen mayor a la izquierda */
+      padding: 1.5rem 1.5rem 1.5rem 3rem;
     }
 
     .map-container {
@@ -115,7 +115,7 @@
       stroke-width: 2px !important;
     }
 
-    /* Panel Fijo Lateral (Menú con más peso visual) */
+    /* Panel Fijo Lateral */
     .sidebar-fixed {
       width: var(--sidebar-width);
       height: 100%;
@@ -126,11 +126,13 @@
       display: flex;
       flex-direction: column;
       z-index: 20;
+      overflow-y: auto;
     }
 
     .sidebar-header {
       border-bottom: 2px solid var(--bg-color);
       padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
     }
 
     .sidebar-header h2 {
@@ -138,6 +140,11 @@
       color: var(--primary-color);
       font-weight: 700;
       word-break: break-word;
+    }
+
+    .sidebar-content {
+      color: #4a5568;
+      line-height: 1.6;
     }
 
     /* Tooltip */
@@ -175,10 +182,13 @@
       </main>
     </div>
 
-    <!-- Panel Lateral Protagonista -->
+    <!-- Panel Lateral -->
     <aside class="sidebar-fixed">
       <div class="sidebar-header">
         <h2 id="sidebarTitle">Aukeratu udalerria</h2>
+      </div>
+      <div class="sidebar-content" id="sidebarContent">
+        <p>Egin klik mapako udalerri batean haren datuak ikusteko.</p>
       </div>
     </aside>
   </div>
@@ -187,8 +197,101 @@
 
   <script>
     const sidebarTitle = document.getElementById('sidebarTitle');
+    const sidebarContent = document.getElementById('sidebarContent');
     const mapContainer = document.getElementById('mapContainer');
     const tooltip = document.getElementById('mapTooltip');
+
+    /* 📌 LIZTETATUTAKO 88 UDALERRIAK (Euskaraz) */
+    const udalerriDatuak = {
+      "Abaltzisketa": { titulua: "Abaltzisketa", edukia: "" },
+      "Aduna": { titulua: "Aduna", edukia: "" },
+      "Aia": { titulua: "Aia", edukia: "" },
+      "Aizarnazabal": { titulua: "Aizarnazabal", edukia: "" },
+      "Albiztur": { titulua: "Albiztur", edukia: "" },
+      "Alegia": { titulua: "Alegia", edukia: "" },
+      "Alkiza": { titulua: "Alkiza", edukia: "" },
+      "Altzaga": { titulua: "Altzaga", edukia: "" },
+      "Altzo": { titulua: "Altzo", edukia: "" },
+      "Amezketa": { titulua: "Amezketa", edukia: "" },
+      "Andoain": { titulua: "Andoain", edukia: "" },
+      "Anoeta": { titulua: "Anoeta", edukia: "" },
+      "Antzuola": { titulua: "Antzuola", edukia: "" },
+      "Arama": { titulua: "Arama", edukia: "" },
+      "Aretxabaleta": { titulua: "Aretxabaleta", edukia: "" },
+      "Asteasu": { titulua: "Asteasu", edukia: "" },
+      "Astigarraga": { titulua: "Astigarraga", edukia: "" },
+      "Ataun": { titulua: "Ataun", edukia: "" },
+      "Azkoitia": { titulua: "Azkoitia", edukia: "" },
+      "Azpeitia": { titulua: "Azpeitia", edukia: "" },
+      "Baliarrain": { titulua: "Baliarrain", edukia: "" },
+      "Beasain": { titulua: "Beasain", edukia: "" },
+      "Beizama": { titulua: "Beizama", edukia: "" },
+      "Belauntza": { titulua: "Belauntza", edukia: "" },
+      "Berastegi": { titulua: "Berastegi", edukia: "" },
+      "Bergara": { titulua: "Bergara", edukia: "" },
+      "Berrobi": { titulua: "Berrobi", edukia: "" },
+      "Bidegoian": { titulua: "Bidania-Goiatz", edukia: "" },
+      "Deba": { titulua: "Deba", edukia: "" },
+      "Donostia": { titulua: "Donostia", edukia: "" },
+      "Eibar": { titulua: "Eibar", edukia: "" },
+      "Elduain": { titulua: "Elduain", edukia: "" },
+      "Elgeta": { titulua: "Elgeta", edukia: "" },
+      "Elgoibar": { titulua: "Elgoibar", edukia: "" },
+      "Errenteria": { titulua: "Errenteria", edukia: "" },
+      "Errezil": { titulua: "Errezil", edukia: "" },
+      "Eskoriatza": { titulua: "Eskoriatza", edukia: "" },
+      "Ezkio-Itsaso": { titulua: "Ezkio-Itsaso", edukia: "" },
+      "Gabiria": { titulua: "Gabiria", edukia: "" },
+      "Gaintza": { titulua: "Gaintza", edukia: "" },
+      "Gaztelu": { titulua: "Gaztelu", edukia: "" },
+      "Getaria": { titulua: "Getaria", edukia: "" },
+      "Hernani": { titulua: "Hernani", edukia: "" },
+      "Hernialde": { titulua: "Hernialde", edukia: "" },
+      "Hondarribia": { titulua: "Hondarribia", edukia: "" },
+      "Ibarra": { titulua: "Ibarra", edukia: "" },
+      "Idiazabal": { titulua: "Idiazabal", edukia: "" },
+      "Ikaztegieta": { titulua: "Ikaztegieta", edukia: "" },
+      "Irun": { titulua: "Irun", edukia: "" },
+      "Irura": { titulua: "Irura", edukia: "" },
+      "Itsasondo": { titulua: "Itsasondo", edukia: "" },
+      "Larraul": { titulua: "Larraul", edukia: "" },
+      "Lasarte-Oria": { titulua: "Lasarte-Oria", edukia: "" },
+      "Lazkao": { titulua: "Lazkao", edukia: "" },
+      "Leaburu": { titulua: "Leaburu", edukia: "" },
+      "Legazpi": { titulua: "Legazpi", edukia: "" },
+      "Legorreta": { titulua: "Legorreta", edukia: "" },
+      "Lezo": { titulua: "Lezo", edukia: "" },
+      "Mendaro": { titulua: "Mendaro", edukia: "" },
+      "Mutiloa": { titulua: "Mutiloa", edukia: "" },
+      "Mutriku": { titulua: "Mutriku", edukia: "" },
+      "Oiartzun": { titulua: "Oiartzun", edukia: "" },
+      "Olaberria": { titulua: "Olaberria", edukia: "" },
+      "Oñati": { titulua: "Oñati", edukia: "" },
+      "Ordizia": { titulua: "Ordizia", edukia: "" },
+      "Orendain": { titulua: "Orendain", edukia: "" },
+      "Orexa": { titulua: "Orexa", edukia: "" },
+      "Orio": { titulua: "Orio", edukia: "" },
+      "Ormaiztegi": { titulua: "Ormaiztegi", edukia: "" },
+      "Pasaia": { titulua: "Pasaia", edukia: "" },
+      "Segura": { titulua: "Segura", edukia: "" },
+      "Soraluze": { titulua: "Soraluze / Placencia de las Armas", edukia: "" },
+      "Tolosa": { titulua: "Tolosa", edukia: "" },
+      "Urnieta": { titulua: "Urnieta", edukia: "" },
+      "Urretxu": { titulua: "Urretxu", edukia: "" },
+      "Usurbil": { titulua: "Usurbil", edukia: "" },
+      "Amasa-Billabona": { titulua: "Amasa-Villabona", edukia: "" },
+      "Zaldibia": { titulua: "Zaldibia", edukia: "" },
+      "Zarautz": { titulua: "Zarautz", edukia: "" },
+      "Zegama": { titulua: "Zegama", edukia: "" },
+      "Zerain": { titulua: "Zerain", edukia: "" },
+      "Zestoa": { titulua: "Zestoa", edukia: "" },
+      "Zizurkil": { titulua: "Zizurkil", edukia: "" },
+      "Zumaia": { titulua: "Zumaia", edukia: "" },
+      "Zumarraga": { titulua: "Zumarraga", edukia: "" },
+      "Arrasate": { titulua: "Arrasate / Mondragón", edukia: "" },
+      "Baliarrain": { titulua: "Baliarrain", edukia: "" },
+      "Leintz-Gatzaga": { titulua: "Leintz-Gatzaga", edukia: "" }
+    };
 
     fetch('mapa.svg')
       .then(response => {
@@ -208,7 +311,8 @@
 
           // Hover: Mover Tooltip
           region.addEventListener('mousemove', (e) => {
-            tooltip.textContent = rawId;
+            const data = udalerriDatuak[rawId];
+            tooltip.textContent = data ? data.titulua : rawId;
             tooltip.style.left = `${e.clientX + 12}px`;
             tooltip.style.top = `${e.clientY + 12}px`;
             tooltip.classList.add('visible');
@@ -218,10 +322,17 @@
             tooltip.classList.remove('visible');
           });
 
-          // Click: Actualizar únicamente el título en el menú derecho
+          // Click: Cargar datos en el panel
           region.addEventListener('click', (e) => {
             e.stopPropagation();
-            sidebarTitle.textContent = rawId;
+
+            if (udalerriDatuak[rawId]) {
+              sidebarTitle.textContent = udalerriDatuak[rawId].titulua;
+              sidebarContent.innerHTML = udalerriDatuak[rawId].edukia || `<p>Ez dago informazio gehigarririk sartuta.</p>`;
+            } else {
+              sidebarTitle.textContent = rawId;
+              sidebarContent.innerHTML = `<p>Ez dago informazio gehigarririk sartuta.</p>`;
+            }
           });
         });
       })
