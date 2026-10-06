@@ -10,9 +10,9 @@
       --sidebar-width: 300px;
       --primary-color: #2c3e50;
       
-      /* 🎨 PALETA DE COLORES DEL MAPA */
+      /* 🎨 PALETA DE COLORES */
       --map-base-color: #a8e6cf;    /* Verde pastel de base */
-      --map-hover-color: #3b9a6d;   /* Verde más oscuro al pasar el ratón (hover) */
+      --map-hover-color: #3b9a6d;   /* Verde más oscuro (hover) */
       --map-border-color: #000000;  /* Líneas delimitadoras negras */
     }
 
@@ -31,7 +31,7 @@
       overflow: hidden;
     }
 
-    /* Goiburua / Encabezado */
+    /* Goiburua */
     .header {
       padding: 0 1.5rem;
       background-color: #ffffff;
@@ -47,14 +47,13 @@
       color: var(--primary-color);
     }
 
-    /* Layout principal dividido entre el Área del mapa y el Menú lateral */
+    /* Layout principal */
     .app-layout {
       display: flex;
       flex: 1;
       height: calc(100vh - 60px);
     }
 
-    /* Área que contiene el mapa */
     .map-area {
       flex: 1;
       display: flex;
@@ -63,7 +62,6 @@
       padding: 1rem;
     }
 
-    /* Recuadro exterior del mapa (ajustado al tamaño real del SVG) */
     .map-container {
       background: #ffffff;
       padding: 0.75rem;
@@ -84,23 +82,33 @@
       display: block;
     }
 
-    /* Estilos y colores del SVG (Sobrescriben el color original de mapa.svg) */
+    /* 🛠️ SOLUCIÓN A LOS BORDES: Aplicamos estilos solo a trazados individuales (path/polygon) */
     .map-container svg path, 
-    .map-container svg polygon, 
-    .map-container svg g {
+    .map-container svg polygon {
       fill: var(--map-base-color) !important;
       stroke: var(--map-border-color) !important;
       stroke-width: 1px !important;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vector-effect: non-scaling-stroke; /* Mantiene el grosor de línea limpio al escalar */
       cursor: pointer;
       transition: fill 0.2s ease, stroke-width 0.2s ease;
     }
 
-    /* Efecto Hover */
+    /* Evitamos que las capas/grupos generales tapen las líneas */
+    .map-container svg g {
+      fill: none;
+      stroke: none;
+    }
+
+    /* Hover: Eleva visualmente el trazado que estás sobrevolando */
     .map-container svg path:hover, 
     .map-container svg polygon:hover {
       fill: var(--map-hover-color) !important;
       stroke: var(--map-border-color) !important;
-      stroke-width: 1.8px !important;
+      stroke-width: 2px !important;
+      /* Reordena el elemento hover hacia el frente para evitar solapamientos */
+      paint-order: stroke fill;
     }
 
     /* Panel Fijo en la Derecha */
@@ -132,7 +140,7 @@
       line-height: 1.6;
     }
 
-    /* Etiqueta flotante (Tooltip) */
+    /* Tooltip */
     .map-tooltip {
       position: fixed;
       background-color: rgba(44, 62, 80, 0.9);
@@ -156,20 +164,17 @@
 </head>
 <body>
 
-  <!-- Encabezado -->
   <header class="header">
     <h1>Gipuzkoako Mapa Interaktiboa</h1>
   </header>
 
   <div class="app-layout">
-    <!-- Área principal con contenedor ajustado -->
     <div class="map-area">
       <main class="map-container" id="mapContainer">
         <p>Mapa kargatzen...</p>
       </main>
     </div>
 
-    <!-- Panel Lateral Fijo en la Derecha -->
     <aside class="sidebar-fixed">
       <div class="sidebar-header">
         <h2 id="sidebarTitle">Informazioa</h2>
@@ -180,7 +185,6 @@
     </aside>
   </div>
 
-  <!-- Etiqueta Tooltip Flotante -->
   <div class="map-tooltip" id="mapTooltip"></div>
 
   <script>
@@ -189,7 +193,6 @@
     const mapContainer = document.getElementById('mapContainer');
     const tooltip = document.getElementById('mapTooltip');
 
-    // Cargar dinámicamente mapa.svg desde el repositorio
     fetch('mapa.svg')
       .then(response => {
         if (!response.ok) throw new Error('Ez da mapa.svg aurkitu');
@@ -206,7 +209,11 @@
                         region.getAttribute('id') || 
                         `Udalerria ${index + 1}`;
 
-          // Hover: Mostrar tooltip
+          // Mueve el path activado al final dentro del SVG para dibujarse por encima
+          region.addEventListener('mouseenter', () => {
+            region.parentNode.appendChild(region);
+          });
+
           region.addEventListener('mousemove', (e) => {
             tooltip.textContent = rawId;
             tooltip.style.left = `${e.clientX + 12}px`;
@@ -218,7 +225,6 @@
             tooltip.classList.remove('visible');
           });
 
-          // Click: Mostrar información en el panel
           region.addEventListener('click', () => {
             sidebarTitle.textContent = rawId;
             sidebarContent.innerHTML = `
