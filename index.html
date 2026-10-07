@@ -6,15 +6,18 @@
   <title>Gipuzkoako Mapa Interaktiboa</title>
   <style>
     :root {
-      --bg-color: #f4f6f8;
+      /* 🎨 PALETA BEIGE Y TONES DE MONTAÑA */
+      --bg-color: #f5f2eb;
+      --card-bg: #faf7f2;
       --sidebar-width: 550px;
-      --primary-color: #2c3e50;
+      --primary-color: #2b3036;
+      --accent-color: #8c6d58;
+      --border-color: #dcd6cd;
       
-      /* 🎨 PALETA DE COLORES */
-      --map-base-color: #a8e6cf;
-      --map-hover-color: #3b9a6d;
-      --map-border-color: #000000;
-      --instagram-color: #e1306c;
+      --map-base-color: #c4d7c1;
+      --map-hover-color: #5b8e7d;
+      --map-border-color: #2b3036;
+      --instagram-color: #c13584;
     }
 
     @media (min-width: 1400px) {
@@ -32,6 +35,7 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg-color);
+      color: #2c302e;
       display: flex;
       flex-direction: column;
       height: 100vh;
@@ -41,8 +45,8 @@
     /* Goiburua */
     .header {
       padding: 0.5rem 1.5rem;
-      background-color: #ffffff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
       z-index: 30;
       height: 60px;
       display: flex;
@@ -56,6 +60,7 @@
       font-size: 1.2rem;
       color: var(--primary-color);
       white-space: nowrap;
+      letter-spacing: -0.3px;
     }
 
     .header-controls {
@@ -68,29 +73,29 @@
     .view-toggle {
       display: flex;
       background: var(--bg-color);
-      padding: 3px;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
+      padding: 2px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
       flex-shrink: 0;
     }
 
     .toggle-btn {
       border: none;
       background: none;
-      padding: 5px 12px;
+      padding: 6px 14px;
       font-size: 0.8rem;
       font-weight: 600;
-      border-radius: 6px;
+      border-radius: 2px;
       cursor: pointer;
-      color: #64748b;
-      transition: all 0.2s ease;
+      color: #6a665e;
+      transition: all 0.15s ease;
       white-space: nowrap;
     }
 
     .toggle-btn.active {
-      background: #ffffff;
+      background: var(--card-bg);
       color: var(--primary-color);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
     }
 
     /* Layout principal */
@@ -123,26 +128,25 @@
       width: 100%;
       padding: 10px 16px;
       font-size: 0.95rem;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
       outline: none;
-      background: #ffffff;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-      transition: border-color 0.2s, box-shadow 0.2s;
+      background: var(--card-bg);
+      color: #2c302e;
+      transition: border-color 0.2s;
     }
 
     .search-input:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-color: var(--accent-color);
     }
 
     /* Vista Mapa */
     .map-container {
-      display: flex;
-      background: #ffffff;
+      display: none;
+      background: var(--card-bg);
       padding: 0.75rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border-radius: 3px;
+      border: 1px solid var(--border-color);
       justify-content: center;
       align-items: center;
       width: fit-content;
@@ -164,10 +168,10 @@
       max-width: 650px;
       height: 100%;
       max-height: calc(100vh - 180px);
-      background: #ffffff;
+      background: var(--card-bg);
       padding: 1.25rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border-radius: 3px;
+      border: 1px solid var(--border-color);
       flex-direction: column;
     }
 
@@ -180,12 +184,12 @@
 
     .udalerri-li {
       padding: 10px 14px;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--border-color);
       cursor: pointer;
       font-weight: 500;
-      color: #334155;
+      color: #3f4440;
       transition: background 0.15s, color 0.15s;
-      border-radius: 6px;
+      border-radius: 2px;
     }
 
     .udalerri-li:hover {
@@ -193,17 +197,17 @@
       color: var(--primary-color);
     }
 
-    /* 🗓️ Vista Egutegia Matriz Visual */
+    /* 🗓️ Vista Egutegia Matriz Visual (Inicia activa) */
     .calendar-container {
-      display: none;
+      display: flex;
       width: 100%;
       max-width: 650px;
       height: 100%;
       max-height: calc(100vh - 180px);
-      background: #ffffff;
+      background: var(--card-bg);
       padding: 1.25rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border-radius: 3px;
+      border: 1px solid var(--border-color);
       flex-direction: column;
       overflow-y: auto;
     }
@@ -218,19 +222,20 @@
     }
 
     .calendar-toolbar h3 {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       color: var(--primary-color);
+      font-weight: 700;
     }
 
     .year-select {
       padding: 6px 12px;
       font-size: 0.9rem;
       font-weight: 600;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
       outline: none;
       color: var(--primary-color);
-      background: #ffffff;
+      background: var(--bg-color);
       cursor: pointer;
     }
 
@@ -241,19 +246,19 @@
     }
 
     .month-block {
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
       overflow: hidden;
-      background: #ffffff;
+      background: var(--card-bg);
     }
 
     .month-header {
       background: var(--primary-color);
-      color: #ffffff;
-      padding: 6px 14px;
+      color: #f5f2eb;
+      padding: 7px 14px;
       font-weight: 700;
-      font-size: 0.9rem;
-      letter-spacing: 0.5px;
+      font-size: 0.85rem;
+      letter-spacing: 0.8px;
       text-transform: uppercase;
     }
 
@@ -266,7 +271,7 @@
       display: flex;
       align-items: center;
       padding: 10px 14px;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--border-color);
       cursor: pointer;
       transition: background 0.15s ease;
       gap: 12px;
@@ -277,7 +282,7 @@
     }
 
     .calendar-item:hover {
-      background: #f8fafc;
+      background: var(--bg-color);
     }
 
     .date-badge {
@@ -285,12 +290,12 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: #f1f5f9;
-      color: var(--primary-color);
-      border-radius: 8px;
+      background: var(--bg-color);
+      color: var(--accent-color);
+      border-radius: 3px;
       min-width: 55px;
       padding: 4px 6px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--border-color);
       flex-shrink: 0;
     }
 
@@ -305,7 +310,7 @@
       font-weight: 700;
       text-transform: uppercase;
       margin-top: 2px;
-      color: #64748b;
+      color: #8c7f73;
     }
 
     .race-info {
@@ -316,7 +321,7 @@
 
     .race-title {
       font-weight: 700;
-      color: #1e293b;
+      color: var(--primary-color);
       font-size: 0.95rem;
     }
 
@@ -330,15 +335,16 @@
     .race-town-tag {
       font-size: 0.7rem;
       font-weight: 700;
-      background: #e2e8f0;
-      color: #475569;
-      padding: 1px 7px;
-      border-radius: 10px;
+      background: var(--bg-color);
+      color: #5c554c;
+      padding: 2px 7px;
+      border-radius: 2px;
+      border: 1px solid var(--border-color);
     }
 
     .calendar-empty {
       text-align: center;
-      color: #94a3b8;
+      color: #8c7f73;
       padding: 3rem 1rem;
       font-style: italic;
     }
@@ -373,9 +379,8 @@
     .sidebar-fixed {
       width: var(--sidebar-width);
       height: 100%;
-      background-color: #ffffff;
-      border-left: 1px solid #e2e8f0;
-      box-shadow: -4px 0 16px rgba(0,0,0,0.05);
+      background-color: var(--card-bg);
+      border-left: 1px solid var(--border-color);
       padding: 2.5rem;
       display: flex;
       flex-direction: column;
@@ -390,28 +395,30 @@
     }
 
     .sidebar-header h2 {
-      font-size: 1.8rem;
+      font-size: 1.7rem;
       color: var(--primary-color);
       font-weight: 700;
       word-break: break-word;
     }
 
     .sidebar-content {
-      color: #4a5568;
+      color: #4a453f;
       line-height: 1.6;
       font-size: 1.05rem;
     }
 
     .sidebar-content h3 {
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       margin: 1.2rem 0 0.6rem 0;
+      color: var(--primary-color);
     }
 
     .race-link {
-      color: var(--primary-color);
+      color: var(--accent-color);
       text-decoration: none;
       transition: color 0.2s ease;
       display: inline-block;
+      font-weight: 600;
     }
 
     .race-link:hover {
@@ -427,10 +434,10 @@
     /* Tooltip */
     .map-tooltip {
       position: fixed;
-      background-color: rgba(44, 62, 80, 0.9);
+      background-color: rgba(43, 48, 54, 0.92);
       color: #ffffff;
       padding: 6px 12px;
-      border-radius: 6px;
+      border-radius: 3px;
       font-size: 0.85rem;
       font-weight: 600;
       pointer-events: none;
@@ -438,14 +445,13 @@
       transition: opacity 0.15s ease;
       z-index: 1000;
       white-space: nowrap;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
 
     .map-tooltip.visible {
       opacity: 1;
     }
 
-    /* 📱 Adaptación móvil con orden vertical estricto */
+    /* 📱 Adaptación móvil */
     @media (max-width: 768px) {
       body {
         overflow-y: auto;
@@ -466,14 +472,13 @@
         gap: 1rem;
       }
 
-      /* 1º LUGAR EN MÓVIL: Información del pueblo */
       .sidebar-fixed {
         order: 1;
         width: 100%;
         height: auto;
         border-left: none;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border: 1px solid var(--border-color);
+        border-radius: 3px;
         padding: 1.25rem;
       }
 
@@ -485,13 +490,11 @@
         gap: 1rem;
       }
 
-      /* 2º LUGAR EN MÓVIL: Buscador */
       .search-wrapper {
         order: 1;
         width: 100%;
       }
 
-      /* 3º LUGAR EN MÓVIL: Mapa, Lista o Egutegia */
       .map-container {
         order: 2;
         width: 100%;
@@ -507,7 +510,7 @@
         order: 2;
         width: 100%;
         max-height: 50vh;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border: 1px solid var(--border-color);
       }
     }
   </style>
@@ -519,9 +522,9 @@
     <h1>Gipuzkoa</h1>
     <div class="header-controls">
       <div class="view-toggle">
-        <button class="toggle-btn active" id="btnMap">Mapa</button>
+        <button class="toggle-btn" id="btnMap">Mapa</button>
         <button class="toggle-btn" id="btnList">Zerrenda</button>
-        <button class="toggle-btn" id="btnCalendar">Egutegia</button>
+        <button class="toggle-btn active" id="btnCalendar">Egutegia</button>
       </div>
     </div>
   </header>
@@ -544,7 +547,7 @@
         <input type="text" id="searchInput" class="search-input" placeholder="Bilatu udalerria..." autocomplete="off">
       </div>
 
-      <!-- 3º EN MÓVIL: Mapa (activo por defecto) -->
+      <!-- 3º EN MÓVIL: Mapa -->
       <main class="map-container" id="mapContainer">
         <p>Mapa kargatzen...</p>
       </main>
@@ -554,7 +557,7 @@
         <ul class="udalerri-ul" id="udalerriUl"></ul>
       </div>
 
-      <!-- 3º EN MÓVIL: Egutegia -->
+      <!-- 3º EN MÓVIL: Egutegia (visible por defecto) -->
       <div class="calendar-container" id="calendarContainer">
         <div class="calendar-toolbar">
           <h3>Mendi Lasterketen Egutegia</h3>
@@ -1126,7 +1129,6 @@
         return;
       }
 
-      // Agrupar por mes
       const racesByMonth = {};
       filteredRaces.forEach(r => {
         const m = r.monthNum || 0;
@@ -1134,7 +1136,6 @@
         racesByMonth[m].push(r);
       });
 
-      // Ordenar meses
       const sortedMonths = Object.keys(racesByMonth).map(Number).sort((a,b) => a - b);
 
       sortedMonths.forEach(mNum => {
@@ -1193,6 +1194,7 @@
     });
 
     renderList();
+    renderCalendarGrid(searchInput.value, yearSelect.value);
 
     // Toggle entre Vistas
     btnMap.addEventListener('click', () => {
