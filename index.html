@@ -116,7 +116,7 @@
     .search-wrapper {
       position: relative;
       width: 100%;
-      max-width: 600px;
+      max-width: 650px;
     }
 
     .search-input {
@@ -161,7 +161,7 @@
     .list-container {
       display: none;
       width: 100%;
-      max-width: 600px;
+      max-width: 650px;
       height: 100%;
       max-height: calc(100vh - 180px);
       background: #ffffff;
@@ -193,11 +193,11 @@
       color: var(--primary-color);
     }
 
-    /* Vista Egutegia (Calendario) */
+    /* 🗓️ Vista Egutegia Matriz Visual */
     .calendar-container {
       display: none;
       width: 100%;
-      max-width: 600px;
+      max-width: 650px;
       height: 100%;
       max-height: calc(100vh - 180px);
       background: #ffffff;
@@ -205,9 +205,10 @@
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       flex-direction: column;
+      overflow-y: auto;
     }
 
-    .calendar-header {
+    .calendar-toolbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -216,7 +217,7 @@
       border-bottom: 2px solid var(--bg-color);
     }
 
-    .calendar-header h3 {
+    .calendar-toolbar h3 {
       font-size: 1.1rem;
       color: var(--primary-color);
     }
@@ -233,61 +234,112 @@
       cursor: pointer;
     }
 
-    .calendar-ul {
-      list-style: none;
-      overflow-y: auto;
-      flex: 1;
-      padding-right: 5px;
-    }
-
-    .calendar-card {
-      padding: 12px 14px;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      margin-bottom: 0.75rem;
-      cursor: pointer;
-      transition: border-color 0.15s, box-shadow 0.15s;
-      background: #fafbfc;
-    }
-
-    .calendar-card:hover {
-      border-color: var(--map-hover-color);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-
-    .calendar-card-top {
+    .months-grid {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4px;
+      flex-direction: column;
+      gap: 1.25rem;
     }
 
-    .calendar-date {
-      font-weight: 700;
-      color: var(--primary-color);
-      font-size: 0.95rem;
+    .month-block {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #ffffff;
     }
 
-    .calendar-town {
-      font-size: 0.75rem;
+    .month-header {
+      background: var(--primary-color);
+      color: #ffffff;
+      padding: 6px 14px;
       font-weight: 700;
-      background: #e2e8f0;
-      color: #475569;
-      padding: 2px 8px;
-      border-radius: 12px;
+      font-size: 0.9rem;
+      letter-spacing: 0.5px;
       text-transform: uppercase;
     }
 
-    .calendar-race {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #334155;
+    .month-races {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .calendar-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      gap: 12px;
+    }
+
+    .calendar-item:last-child {
+      border-bottom: none;
+    }
+
+    .calendar-item:hover {
+      background: #f8fafc;
+    }
+
+    .date-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #f1f5f9;
+      color: var(--primary-color);
+      border-radius: 8px;
+      min-width: 55px;
+      padding: 4px 6px;
+      border: 1px solid #e2e8f0;
+      flex-shrink: 0;
+    }
+
+    .date-badge .day-num {
+      font-size: 1.1rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .date-badge .month-name {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-top: 2px;
+      color: #64748b;
+    }
+
+    .race-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .race-title {
+      font-weight: 700;
+      color: #1e293b;
+      font-size: 0.95rem;
+    }
+
+    .race-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .race-town-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: #e2e8f0;
+      color: #475569;
+      padding: 1px 7px;
+      border-radius: 10px;
     }
 
     .calendar-empty {
       text-align: center;
       color: #94a3b8;
-      padding: 2rem 1rem;
+      padding: 3rem 1rem;
       font-style: italic;
     }
 
@@ -487,7 +539,7 @@
 
     <!-- Área principal -->
     <div class="main-area" id="mainArea">
-      <!-- 2º EN MÓVIL: Buscador situado encima del mapa/lista/egutegia -->
+      <!-- 2º EN MÓVIL: Buscador -->
       <div class="search-wrapper" id="searchWrapper">
         <input type="text" id="searchInput" class="search-input" placeholder="Bilatu udalerria..." autocomplete="off">
       </div>
@@ -504,14 +556,14 @@
 
       <!-- 3º EN MÓVIL: Egutegia -->
       <div class="calendar-container" id="calendarContainer">
-        <div class="calendar-header">
+        <div class="calendar-toolbar">
           <h3>Mendi Lasterketen Egutegia</h3>
           <select id="yearSelect" class="year-select">
             <option value="2026" selected>2026</option>
             <option value="2027">2027</option>
           </select>
         </div>
-        <ul class="calendar-ul" id="calendarUl"></ul>
+        <div class="months-grid" id="calendarGrid"></div>
       </div>
     </div>
   </div>
@@ -525,7 +577,7 @@
     const listContainer = document.getElementById('listContainer');
     const calendarContainer = document.getElementById('calendarContainer');
     const udalerriUl = document.getElementById('udalerriUl');
-    const calendarUl = document.getElementById('calendarUl');
+    const calendarGrid = document.getElementById('calendarGrid');
     const searchInput = document.getElementById('searchInput');
     const yearSelect = document.getElementById('yearSelect');
     const tooltip = document.getElementById('mapTooltip');
@@ -867,7 +919,19 @@
       });
     }
 
-    /* 🗓️ PARSER DEL EGUTEGIA */
+    /* 🗓️ EGUTEGIA MATRIZ / MESES PARSER */
+    const monthNames = {
+      1: "Urtarrila", 2: "Otsaila", 3: "Martxoa", 4: "Apirila",
+      5: "Maiatza", 6: "Ekaina", 7: "Uztaila", 8: "Abuztua",
+      9: "Iraila", 10: "Urria", 11: "Azaroa", 12: "Abendua"
+    };
+
+    const monthShortNames = {
+      1: "Urt", 2: "Ots", 3: "Mar", 4: "Api",
+      5: "Mai", 6: "Eka", 7: "Uzt", 8: "Abu",
+      9: "Ira", 10: "Urr", 11: "Aza", 12: "Abe"
+    };
+
     const hilabeteak = {
       "urtarrilak": 1, "urtarrila": 1,
       "otsailak": 2, "otsaila": 2,
@@ -903,7 +967,6 @@
             const liList = ul.querySelectorAll('li');
             liList.forEach(li => {
               const text = li.innerText || li.textContent;
-              // Formato esperado: 2026 (VIII): Otsailak 1 O 2026: Otsailak 1 O 2026 (VIII): -
               const match = text.match(/(\d{4})(?:\s*\(([^)]+)\))?:\s*(.+)/);
               if (match) {
                 const year = match[1];
@@ -911,15 +974,9 @@
                 const dateStr = match[3].trim();
 
                 if (dateStr && dateStr !== '-') {
-                  // Intentar extraer día y mes
-                  const dateParts = dateStr.match(/^([a-zA-ZáéíóúÁÉÍÓÚñÑ]+)\s+(\d+)||^(\d+)\s+([a-zA-ZáéíóúÁÉÍÓÚñÑ]+)/) ||
-                                    dateStr.match(/^([a-zA-Z]+)\s+(\d+)/) ||
-                                    dateStr.split(' ');
-                  
                   let day = 0;
                   let monthNum = 0;
 
-                  // Parsear patrones comunes en euskera (ej: "Otsailak 1" o "1 Otsailak")
                   const words = dateStr.toLowerCase().split(/\s+/);
                   words.forEach(w => {
                     const num = parseInt(w, 10);
@@ -950,8 +1007,8 @@
       return races;
     }
 
-    function renderCalendar(filter = "", selectedYear = "2026") {
-      calendarUl.innerHTML = "";
+    function renderCalendarGrid(filter = "", selectedYear = "2026") {
+      calendarGrid.innerHTML = "";
       const allRaces = parseRacesFromData();
 
       const filteredRaces = allRaces.filter(r => {
@@ -962,34 +1019,54 @@
         return matchesYear && matchesSearch;
       });
 
-      // Ordenar cronológicamente (mes y luego día)
-      filteredRaces.sort((a, b) => {
-        if (a.monthNum !== b.monthNum) return a.monthNum - b.monthNum;
-        return a.day - b.day;
-      });
-
       if (filteredRaces.length === 0) {
-        calendarUl.innerHTML = `<li class="calendar-empty">Ez dago lasterketarik oraindik ${selectedYear} urterako.</li>`;
+        calendarGrid.innerHTML = `<div class="calendar-empty">Ez dago lasterketarik baieztatuta ${selectedYear} urterako.</div>`;
         return;
       }
 
+      // Agrupar por mes
+      const racesByMonth = {};
       filteredRaces.forEach(r => {
-        const li = document.createElement('li');
-        li.className = 'calendar-card';
-        li.innerHTML = `
-          <div class="calendar-card-top">
-            <span class="calendar-date">${r.dateStr}</span>
-            <span class="calendar-town">${r.townTitle}</span>
-          </div>
-          <div class="calendar-race">${r.raceName} ${r.edition ? `(${r.edition})` : ''}</div>
-        `;
+        const m = r.monthNum || 0;
+        if (!racesByMonth[m]) racesByMonth[m] = [];
+        racesByMonth[m].push(r);
+      });
 
-        li.addEventListener('click', (e) => {
-          e.stopPropagation();
-          selectUdalerria(r.townKey);
+      // Ordenar meses
+      const sortedMonths = Object.keys(racesByMonth).map(Number).sort((a,b) => a - b);
+
+      sortedMonths.forEach(mNum => {
+        const monthBlock = document.createElement('div');
+        monthBlock.className = 'month-block';
+
+        const monthTitle = monthNames[mNum] || "Beste batzuk";
+        
+        let racesHtml = '';
+        const mRaces = racesByMonth[mNum].sort((a,b) => a.day - b.day);
+
+        mRaces.forEach(r => {
+          racesHtml += `
+            <div class="calendar-item" onclick="selectUdalerria('${r.townKey}')">
+              <div class="date-badge">
+                <span class="day-num">${r.day || '--'}</span>
+                <span class="month-name">${monthShortNames[r.monthNum] || ''}</span>
+              </div>
+              <div class="race-info">
+                <span class="race-title">${r.raceName} ${r.edition ? `(${r.edition})` : ''}</span>
+                <div class="race-meta">
+                  <span class="race-town-tag">${r.townTitle}</span>
+                </div>
+              </div>
+            </div>
+          `;
         });
 
-        calendarUl.appendChild(li);
+        monthBlock.innerHTML = `
+          <div class="month-header">${monthTitle}</div>
+          <div class="month-races">${racesHtml}</div>
+        `;
+
+        calendarGrid.appendChild(monthBlock);
       });
     }
 
@@ -997,7 +1074,7 @@
     searchInput.addEventListener('input', (e) => {
       const term = e.target.value;
       renderList(term);
-      renderCalendar(term, yearSelect.value);
+      renderCalendarGrid(term, yearSelect.value);
 
       if (term.trim() !== "") {
         const matchKey = Object.keys(udalerriDatuak).find(k => 
@@ -1010,7 +1087,7 @@
     });
 
     yearSelect.addEventListener('change', (e) => {
-      renderCalendar(searchInput.value, e.target.value);
+      renderCalendarGrid(searchInput.value, e.target.value);
     });
 
     renderList();
@@ -1045,7 +1122,7 @@
       listContainer.style.display = 'none';
       calendarContainer.style.display = 'flex';
 
-      renderCalendar(searchInput.value, yearSelect.value);
+      renderCalendarGrid(searchInput.value, yearSelect.value);
     });
   </script>
 </body>
