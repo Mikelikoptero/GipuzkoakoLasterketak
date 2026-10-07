@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="eu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gipuzkoako Mapa Interaktiboa</title>
+  <style>
+    :root {
+      /* 🎨 PALETA BEIGE Y TONOS DE MONTAÑA */
+      --bg-color: #f5f2eb;
+      --card-bg: #faf7f2;
+      --sidebar-width: 550px;
+      --primary-color: #2b3036;
+      --accent-color: #8c6d58;
+      --border-color: #dcd6cd;
+      
+      --map-base-color: #c4d7c1;
+      --map-hover-color: #5b8e7d;
+      --map-border-color: #2b3036;
+      --instagram-color: #c13584;
+    }
+
+    @media (min-width: 1400px) {
+      :root {
+        --sidebar-width: 650px;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: #2c302e;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Goiburua */
+    .header {
+      padding: 0.5rem 1.5rem;
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      z-index: 30;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 1.5rem;
+      position: relative;
+    }
+
+    .header h1 {
+      font-size: 1.2rem;
+      color: var(--primary-color);
+      white-space: nowrap;
+      letter-spacing: -0.3px;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      position: relative;
+    }
+
+    .view-toggle {
+      display: flex;
+      background: var(--bg-color);
+      padding: 2px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .toggle-btn {
+      border: none;
+      background: none;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 2px;
+      cursor: pointer;
+      color: #6a665e;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .toggle-btn.active {
+      background: var(--card-bg);
+      color: var(--primary-color);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+
+    /* Layout principal */
+    .app-layout {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 60px);
+      overflow: hidden;
+    }
+
+    .main-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem;
+      overflow-y: auto;
+      height: 100%;
+      gap: 1rem;
+    }
+
+    /* Buscador */
+    .search-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 650px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 16px;
+      font-size: 0.95rem;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      outline: none;
+      background: var(--card-bg);
+      color: #2c302e;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-color);
+    }
+
+    /* Vista Mapa */
+    .map-container {
+      display: none;
+      background: var(--card-bg);
+      padding: 0.75rem;
+      border-radius: 3px;
+      border: 1px solid var(--border-color);
+      justify-content: center;
+      align-items: center;
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    .map-container svg {
+      width: auto;
+      height: auto;
+      max-width: calc(100vw - var(--sidebar-width) - 5rem);
+      max-height: calc(100vh - 180px);
+      display: block;
+    }
+
+    /* Vista Lista */
+    .list-container {
+      display: none;
+      width: 100%;
+      max-width: 650px;
+      height: 100%;
+      max-height: calc(100vh - 180px);
+      background: var(--card-bg);
+      padding: 1.25rem;
+      border-radius: 3px;
+      border: 1px solid var(--border-color);
+      flex-direction: column;
+    }
+
+    .udalerri-ul {
+      list-style: none;
+      overflow-y: auto;
+      flex: 1;
+      padding-right: 5px;
+    }
+
+    .udalerri-li {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      font-weight: 500;
+      color: #3f4440;
+      transition: background 0.15s, color 0.15s;
+      border-radius: 2px;
+    }
+
+    .udalerri-li:hover {
+      background-color: var(--bg-color);
+      color: var(--primary-color);
+    }
+
+    /* 🗓️ Vista Egutegia Matriz Visual (Inicia activa) */
+    .calendar-container {
+      display: flex;
+      width: 100%;
+      max-width: 650px;
+      height: 100%;
+      max-height: calc(100vh - 180px);
+      background: var(--card-bg);
+      padding: 1.25rem;
+      border-radius: 3px;
+      border: 1px solid var(--border-color);
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .calendar-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--bg-color);
+    }
+
+    .calendar-toolbar h3 {
+      font-size: 1.05rem;
+      color: var(--primary-color);
+      font-weight: 700;
+    }
+
+    .year-select {
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      outline: none;
+      color: var(--primary-color);
+      background: var(--bg-color);
+      cursor: pointer;
+    }
+
+    .months-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .month-block {
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      overflow: hidden;
+      background: var(--card-bg);
+    }
+
+    .month-header {
+      background: var(--primary-color);
+      color: #f5f2eb;
+      padding: 7px 14px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .month-races {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .calendar-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: background 0.15s ease;
+      gap: 12px;
+    }
+
+    .calendar-item:last-child {
+      border-bottom: none;
+    }
+
+    .calendar-item:hover {
+      background: var(--bg-color);
+    }
+
+    .date-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-color);
+      color: var(--accent-color);
+      border-radius: 3px;
+      min-width: 55px;
+      padding: 4px 6px;
+      border: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .date-badge .day-num {
+      font-size: 1.1rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .date-badge .month-name {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-top: 2px;
+      color: #8c7f73;
+    }
+
+    .race-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .race-title {
+      font-weight: 700;
+      color: var(--primary-color);
+      font-size: 0.95rem;
+    }
+
+    .race-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .race-town-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: var(--bg-color);
+      color: #5c554c;
+      padding: 2px 7px;
+      border-radius: 2px;
+      border: 1px solid var(--border-color);
+    }
+
+    .calendar-empty {
+      text-align: center;
+      color: #8c7f73;
+      padding: 3rem 1rem;
+      font-style: italic;
+    }
+
+    /* Estilos SVG */
+    .map-container svg path, 
+    .map-container svg polygon {
+      fill: var(--map-base-color) !important;
+      stroke: var(--map-border-color) !important;
+      stroke-width: 1px !important;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vector-effect: non-scaling-stroke;
+      paint-order: stroke fill;
+      cursor: pointer !important;
+      pointer-events: visiblePainted !important;
+      transition: fill 0.2s ease, stroke-width 0.2s ease;
+    }
+
+    .map-container svg g {
+      fill: none;
+      stroke: none;
+    }
+
+    .map-container svg path:hover, 
+    .map-container svg polygon:hover {
+      fill: var(--map-hover-color) !important;
+      stroke-width: 2px !important;
+    }
+
+    /* Panel Fijo Lateral */
+    .sidebar-fixed {
+      width: var(--sidebar-width);
+      height: 100%;
+      background-color: var(--card-bg);
+      border-left: 1px solid var(--border-color);
+      padding: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      z-index: 20;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      border-bottom: 2px solid var(--bg-color);
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .sidebar-header h2 {
+      font-size: 1.7rem;
+      color: var(--primary-color);
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .sidebar-content {
+      color: #4a453f;
+      line-height: 1.6;
+      font-size: 1.05rem;
+    }
+
+    .sidebar-content h3 {
+      font-size: 1.2rem;
+      margin: 1.2rem 0 0.6rem 0;
+      color: var(--primary-color);
+    }
+
+    .race-link {
+      color: var(--accent-color);
+      text-decoration: none;
+      transition: color 0.2s ease;
+      display: inline-block;
+      font-weight: 600;
+    }
+
+    .race-link:hover {
+      color: var(--instagram-color);
+      text-decoration: underline;
+    }
+
+    .sidebar-content ul {
+      margin-left: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Tooltip */
+    .map-tooltip {
+      position: fixed;
+      background-color: rgba(43, 48, 54, 0.92);
+      color: #ffffff;
+      padding: 6px 12px;
+      border-radius: 3px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      z-index: 1000;
+      white-space: nowrap;
+    }
+
+    .map-tooltip.visible {
+      opacity: 1;
+    }
+
+    /* 📱 Adaptación móvil */
+    @media (max-width: 768px) {
+      body {
+        overflow-y: auto;
+      }
+
+      .header {
+        height: auto;
+        padding: 0.75rem;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      .app-layout {
+        flex-direction: column;
+        height: auto;
+        overflow: visible;
+        padding: 0.75rem;
+        gap: 1rem;
+      }
+
+      .sidebar-fixed {
+        order: 1;
+        width: 100%;
+        height: auto;
+        border-left: none;
+        border: 1px solid var(--border-color);
+        border-radius: 3px;
+        padding: 1.25rem;
+      }
+
+      .main-area {
+        order: 2;
+        padding: 0;
+        width: 100%;
+        height: auto;
+        gap: 1rem;
+      }
+
+      .search-wrapper {
+        order: 1;
+        width: 100%;
+      }
+
+      .map-container {
+        order: 2;
+        width: 100%;
+      }
+
+      .map-container svg {
+        max-width: 100%;
+        max-height: 45vh;
+      }
+
+      .list-container,
+      .calendar-container {
+        order: 2;
+        width: 100%;
+        max-height: 50vh;
+        border: 1px solid var(--border-color);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Goiburua -->
+  <header class="header">
+    <h1>Gipuzkoa</h1>
+    <div class="header-controls">
+      <div class="view-toggle">
+        <button class="toggle-btn" id="btnMap">Mapa</button>
+        <button class="toggle-btn" id="btnList">Zerrenda</button>
+        <button class="toggle-btn active" id="btnCalendar">Egutegia</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <!-- 1º EN MÓVIL: Panel Lateral con la información -->
+    <aside class="sidebar-fixed">
+      <div class="sidebar-header">
+        <h2 id="sidebarTitle">Aukeratu udalerria</h2>
+      </div>
+      <div class="sidebar-content" id="sidebarContent">
+        <p>Egin klik mapako edo zerrendako udalerri batean.</p>
+      </div>
+    </aside>
+
+    <!-- Área principal -->
+    <div class="main-area" id="mainArea">
+      <!-- 2º EN MÓVIL: Buscador -->
+      <div class="search-wrapper" id="searchWrapper">
+        <input type="text" id="searchInput" class="search-input" placeholder="Bilatu udalerria..." autocomplete="off">
+      </div>
+
+      <!-- 3º EN MÓVIL: Mapa -->
+      <main class="map-container" id="mapContainer">
+        <p>Mapa kargatzen...</p>
+      </main>
+
+      <!-- 3º EN MÓVIL: Lista -->
+      <div class="list-container" id="listContainer">
+        <ul class="udalerri-ul" id="udalerriUl"></ul>
+      </div>
+
+      <!-- 3º EN MÓVIL: Egutegia (visible por defecto) -->
+      <div class="calendar-container" id="calendarContainer">
+        <div class="calendar-toolbar">
+          <h3>Mendi Lasterketen Egutegia</h3>
+          <select id="yearSelect" class="year-select">
+            <option value="2026">2026</option>
+            <option value="2027" selected>2027</option>
+          </select>
+        </div>
+        <div class="months-grid" id="calendarGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="map-tooltip" id="mapTooltip"></div>
+
+  <script>
+    const sidebarTitle = document.getElementById('sidebarTitle');
+    const sidebarContent = document.getElementById('sidebarContent');
+    const mapContainer = document.getElementById('mapContainer');
+    const listContainer = document.getElementById('listContainer');
+    const calendarContainer = document.getElementById('calendarContainer');
+    const udalerriUl = document.getElementById('udalerriUl');
+    const calendarGrid = document.getElementById('calendarGrid');
+    const searchInput = document.getElementById('searchInput');
+    const yearSelect = document.getElementById('yearSelect');
+    const tooltip = document.getElementById('mapTooltip');
+
+    const btnMap = document.getElementById('btnMap');
+    const btnList = document.getElementById('btnList');
+    const btnCalendar = document.getElementById('btnCalendar');
+
+    /* 📌 UDALERRIEN DATU-BASEA */
+    const udalerriDatuak = {
+      "Abaltzisketa": { titulua: "Abaltzisketa", edukia: "" },
+      "Aduna": { titulua: "Aduna", edukia: "" },
+      "Aia": { 
+        titulua: "Aia", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/aiako.mendi.lasterketa/" class="race-link">Aiako Mendi Lasterketa ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (XIII):</strong> Martxoak 3</li>
+            <li><strong>2025 (XIV):</strong> Martxoak 2</li>
+            <li><strong>2026 (XV):</strong> Martxoak 1</li>
+          </ul>
+        ` 
+      },
+      "Aizarnazabal": { titulua: "Aizarnazabal", edukia: "" },
+      "Albiztur": { titulua: "Albiztur", edukia: "" },
+      "Alegia": { titulua: "Alegia", edukia: "" },
+      "Alkiza": { titulua: "Alkiza", edukia: "" },
+      "Altzaga": { titulua: "Altzaga", edukia: "" },
+      "Altzo": { titulua: "Altzo", edukia: "" },
+      "Amezketa": { titulua: "Amezketa", edukia: "" },
+      "Andoain": { 
+        titulua: "Andoain", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/sorabillatrail/" class="race-link">Sorabilla Mendi Lasterketa ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2026 (I):</strong> Abuztuak 29</li>
+          </ul>
+        ` 
+      },
+      "Anoeta": { titulua: "Anoeta", edukia: "" },
+      "Antzuola": { titulua: "Antzuola", edukia: "" },
+      "Arama": { titulua: "Arama", edukia: "" },
+      "Aretxabaleta": { titulua: "Aretxabaleta", edukia: "" },
+      "Asteasu": { titulua: "Asteasu", edukia: "" },
+      "Astigarraga": { 
+        titulua: "Astigarraga", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/basatrail/" class="race-link">Basatrail Mendi Lasterketa ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2026 (I):</strong> Irailak 26</li>
+          </ul>
+        ` 
+      },
+      "Ataun": { titulua: "Ataun", edukia: "" },
+      "Azkoitia": { titulua: "Azkoitia", edukia: "" },
+      "Azpeitia": { titulua: "Azpeitia", edukia: "" },
+      "Baliarrain": { titulua: "Baliarrain", edukia: "" },
+      "Beasain": { 
+        titulua: "Beasain", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/bealak_taldea/" class="race-link">Bealak Trail ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2025 (I):</strong> Martxoak 15</li>
+            <li><strong>2026 (II):</strong> Martxoak 15</li>
+          </ul>
+        ` 
+      },
+      "Beizama": { titulua: "Beizama", edukia: "" },
+      "Belauntza": { titulua: "Belauntza", edukia: "" },
+      "Berastegi": { 
+        titulua: "Berastegi", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/negutrail/" class="race-link">Negu Trail Mendi Lasterketa ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (VI):</strong> Otsailak 4</li>
+            <li><strong>2025 (VII):</strong> Otsailak 2</li>
+            <li><strong>2026 (VIII):</strong> Otsailak 1</li>
+          </ul>
+        ` 
+      },
+      "Bergara": { titulua: "Bergara", edukia: "" },
+      "Berrobi": { titulua: "Berrobi", edukia: "" },
+      "Bidegoian": { titulua: "Bidania-Goiatz", edukia: "" },
+      "Deba": { titulua: "Deba", edukia: "" },
+      "Donostia": { titulua: "Donostia", edukia: "" },
+      "Eibar": { titulua: "Eibar", edukia: "" },
+      "Elduain": { titulua: "Elduain", edukia: "" },
+      "Elgeta": { titulua: "Elgeta", edukia: "" },
+      "Elgoibar": { titulua: "Elgoibar", edukia: "" },
+      "Errenteria": { 
+        titulua: "Errenteria", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/landarbasotrail/" class="race-link">Landarbaso Trail ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (IV):</strong> Maiatzak 5</li>
+            <li><strong>2025 (V):</strong> Maiatzak 4</li>
+            <li><strong>2026 (VI):</strong> Maiatzak 3</li>
+          </ul>
+        ` 
+      },
+      "Errezil": { titulua: "Errezil", edukia: "" },
+      "Eskoriatza": { titulua: "Eskoriatza", edukia: "" },
+      "Ezkio-Itsaso": { titulua: "Ezkio-Itsaso", edukia: "" },
+      "Gabiria": { 
+        titulua: "Gabiria", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/leharrei/" class="race-link">Leharrei Mendi Lasterketa ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (VII):</strong> Apirilak 6</li>
+            <li><strong>2025 (VIII):</strong> Apirilak 5</li>
+            <li><strong>2026 (IX):</strong> Apirilak 18</li>
+          </ul>
+        ` 
+      },
+      "Gaintza": { titulua: "Gaintza", edukia: "" },
+      "Gaztelu": { titulua: "Gaztelu", edukia: "" },
+      "Getaria": { titulua: "Getaria", edukia: "" },
+      "Hernani": { 
+        titulua: "Hernani", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/axeriak_mlt/" class="race-link">Ereñotzuko Mendi Lasterketa ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (XII):</strong> Ekainak 1</li>
+            <li><strong>2025 (XIII):</strong> Maiatzak 31</li>
+            <li><strong>2026 (XIV):</strong> Maiatzak 30</li>
+          </ul>
+        ` 
+      },
+      "Hernialde": { titulua: "Hernialde", edukia: "" },
+      "Hondarribia": { 
+        titulua: "Hondarribia", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/cdfortunake" class="race-link">Donostia-Hondarribia Talaia Bidea ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (XII):</strong> Martxoak 24</li>
+            <li><strong>2025 (XIII):</strong> Martxoak 23</li>
+            <li><strong>2026 (XIV):</strong> Martxoak 22</li>
+          </ul>
+          <h3>
+            <a href="https://www.instagram.com/benatelzomendilasterketa/" class="race-link">Beñat Elzo Mendi Lasterketa ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (IX):</strong> Azaroak 1</li>
+            <li><strong>2025 (X):</strong> Azaroak 1</li>
+            <li><strong>2026 (XI):</strong> Azaroak 1</li>
+          </ul>
+        ` 
+      },
+      "Ibarra": { titulua: "Ibarra", edukia: "" },
+      "Idiazabal": { 
+        titulua: "Idiazabal", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/axaritrailml/" class="race-link">Axari Trail ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (XI):</strong> Irailak 8</li>
+            <li><strong>2025 (XII):</strong> Irailak 14</li>
+            <li><strong>2026 (XIII):</strong> Irailak 13</li>
+          </ul>
+        ` 
+      },
+      "Ikaztegieta": { titulua: "Ikaztegieta", edukia: "" },
+      "Irun": { titulua: "Irun", edukia: "" },
+      "Irura": { titulua: "Irura", edukia: "" },
+      "Itsasondo": { titulua: "Itsasondo", edukia: "" },
+      "Larraul": { titulua: "Larraul", edukia: "" },
+      "Lasarte-Oria": { 
+        titulua: "Lasarte-Oria", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/lasarteoriatrail/" class="race-link">Lasarte-Oriako Mendi Lasterketa ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (II):</strong> Irailak 29</li>
+            <li><strong>2025:</strong> -</li>
+            <li><strong>2026 (III):</strong> Irailak 26</li>
+          </ul>
+        ` 
+      },
+      "Lazkao": { titulua: "Lazkao", edukia: "" },
+      "Leaburu": { titulua: "Leaburu", edukia: "" },
+      "Legazpi": { 
+        titulua: "Legazpi", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/korostitrail/" class="race-link">Korosti Trail ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (I):</strong> Urriak 13</li>
+            <li><strong>2025 (II):</strong> Urriak 12</li>
+            <li><strong>2026 (III):</strong> Urriak 18</li>
+          </ul>
+        ` 
+      },
+      "Legorreta": { titulua: "Legorreta", edukia: "" },
+      "Lezo": { 
+        titulua: "Lezo", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/lezo_jaizkibelml/" class="race-link">Lezo-Jaizkibel Mendi Lasterketa ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (X):</strong> Otsailak 25</li>
+            <li><strong>2025 (XI):</strong> Otsailak 23</li>
+            <li><strong>2026 (XII):</strong> Otsailak 22</li>
+            <li><strong>2027 (XIII):</strong> Otsailak 21</li>
+          </ul>
+        ` 
+      },
+      "Mendaro": { titulua: "Mendaro", edukia: "" },
+      "Mutiloa": { titulua: "Mutiloa", edukia: "" },
+      "Mutriku": { titulua: "Mutriku", edukia: "" },
+      "Oiartzun": { 
+        titulua: "Oiartzun", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/intxixutrail/" class="race-link">Intxixu Trail ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (IX):</strong> Ekainak 9</li>
+            <li><strong>2025 (X):</strong> Ekainak 8</li>
+            <li><strong>2026 (XI):</strong> Ekainak 7</li>
+          </ul>
+        ` 
+      },
+      "Olaberria": { titulua: "Olaberria", edukia: "" },
+      "Oñati": { titulua: "Oñati", edukia: "" },
+      "Ordizia": { 
+        titulua: "Ordizia", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/ordizia.mendilasterketa/" class="race-link">Ordiziako Mendi Lasterketa ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (II):</strong> Otsailak 4</li>
+            <li><strong>2025 (III):</strong> Otsailak 16</li>
+            <li><strong>2026 (IV):</strong> Otsailak 15</li>
+          </ul>
+        ` 
+      },
+      "Orendain": { titulua: "Orendain", edukia: "" },
+      "Orexa": { titulua: "Orexa", edukia: "" },
+      "Orio": { titulua: "Orio", edukia: "" },
+      "Ormaiztegi": { titulua: "Ormaiztegi", edukia: "" },
+      "Pasaia": { 
+        titulua: "Pasaia", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/molinotrail/" class="race-link">Moliño Trail ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2026 (I):</strong> Maiatzak 9</li>
+          </ul>
+        ` 
+      },
+      "Segura": { titulua: "Segura", edukia: "" },
+      "Soraluze": { titulua: "Soraluze", edukia: "" },
+      "Tolosa": { 
+        titulua: "Tolosa", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/t3tmaratoia/" class="race-link">T2T ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (IX):</strong> Ekainak 16</li>
+            <li><strong>2025 (X):</strong> Ekainak 15</li>
+            <li><strong>2026 (XI):</strong> Ekainak 14</li>
+          </ul>
+          <h3>
+            <a href="https://www.instagram.com/t3tmaratoia/" class="race-link">T3T ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (IX):</strong> Ekainak 16</li>
+            <li><strong>2025 (X):</strong> Ekainak 15</li>
+            <li><strong>2026 (XI):</strong> Ekainak 14</li>
+          </ul>
+        ` 
+      },
+      "Urnieta": { titulua: "Urnieta", edukia: "" },
+      "Urretxu": { titulua: "Urretxu", edukia: "" },
+      "Usurbil": { 
+        titulua: "Usurbil", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/uxuetrail_2026" class="race-link">Uxue Trail ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (IV):</strong> Ekainak 16</li>
+            <li><strong>2025 (V):</strong> Ekainak 15</li>
+            <li><strong>2026 (VI):</strong> Ekainak 14</li>
+          </ul>
+        ` 
+      },
+      "Villabona": { 
+        titulua: "Amasa-Villabona", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/trikuharrimendilasterketa" class="race-link">Trikuharri Mendi Lasterketa ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (III):</strong> Uztailak 20</li>
+            <li><strong>2025 (IV):</strong> Uztailak 19</li>
+            <li><strong>2026 (V):</strong> Ekainak 27</li>
+          </ul>
+        ` 
+      },
+      "Zaldibia": { 
+        titulua: "Zaldibia", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/zaldibiakoml/" class="race-link">Zaldibiako Mendi Lasterketa ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (V):</strong> Maiatzak 25</li>
+            <li><strong>2025 (VI):</strong> Maiatzak 24</li>
+            <li><strong>2026 (VII):</strong> Maiatzak 16</li>
+          </ul>
+        ` 
+      },
+      "Zarautz": { 
+        titulua: "Zarautz", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/pagoetamendilasterketazarautz" class="race-link">Pagoeta Mendi Lasterketa ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (XIX):</strong> Apirilak 28</li>
+            <li><strong>2025 (XX):</strong> Apirilak 27</li>
+            <li><strong>2026 (XXI):</strong> Apirilak 26</li>
+          </ul>
+        ` 
+      },
+      "Zegama": { titulua: "Zegama", edukia: "" },
+      "Zerain": { titulua: "Zerain", edukia: "" },
+      "Zestoa": { 
+        titulua: "Zestoa", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/kobazkobatrail/" class="race-link">Kobaz Koba Trail ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (VIII):</strong> Otsailak 18</li>
+            <li><strong>2025 (IX):</strong> Otsailak 9</li>
+            <li><strong>2026 (X):</strong> Otsailak 8</li>
+          </ul>
+        `
+      },
+      "Zizurkil": { titulua: "Zizurkil", edukia: "" },
+      "Zumaia": { titulua: "Zumaia", edukia: "" },
+      "Zumarraga": { 
+        titulua: "Zumarraga", 
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/uztrail/" class="race-link">UZ Trail ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (IX):</strong> Martxoak 3</li>
+            <li><strong>2025 (X):</strong> Martxoak 23</li>
+            <li><strong>2026 (XI):</strong> Martxoak 1</li>
+          </ul>
+        ` 
+      },
+      "Arrasate": { titulua: "Arrasate / Mondragón", edukia: "" },
+      "Leintz-Gatzaga": { titulua: "Leintz-Gatzaga", edukia: "" }
+    };
+
+    function selectUdalerria(rawId) {
+      if (udalerriDatuak[rawId]) {
+        sidebarTitle.textContent = udalerriDatuak[rawId].titulua;
+        sidebarContent.innerHTML = udalerriDatuak[rawId].edukia || `<p>Ez dago informazio gehigarririk sartuta.</p>`;
+      } else {
+        sidebarTitle.textContent = rawId;
+        sidebarContent.innerHTML = `<p>Ez dago informazio gehigarririk sartuta.</p>`;
+      }
+    }
+
+    // Cargar SVG
+    fetch('mapa.svg')
+      .then(response => {
+        if (!response.ok) throw new Error('Ez da mapa.svg aurkitu');
+        return response.text();
+      })
+      .then(svgData => {
+        mapContainer.innerHTML = svgData;
+
+        const regions = mapContainer.querySelectorAll('path, polygon');
+
+        regions.forEach((region, index) => {
+          const rawId = region.getAttribute('data-name') || 
+                        region.getAttribute('name') || 
+                        region.getAttribute('id') || 
+                        `Udalerria ${index + 1}`;
+
+          region.addEventListener('mousemove', (e) => {
+            const data = udalerriDatuak[rawId];
+            tooltip.textContent = data ? data.titulua : rawId;
+            tooltip.style.left = `${e.clientX + 12}px`;
+            tooltip.style.top = `${e.clientY + 12}px`;
+            tooltip.classList.add('visible');
+          });
+
+          region.addEventListener('mouseleave', () => {
+            tooltip.classList.remove('visible');
+          });
+
+          region.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectUdalerria(rawId);
+          });
+        });
+      })
+      .catch(error => {
+        console.error(error);
+        mapContainer.innerHTML = `<p style="color:red;">Errorea mapa.svg kargatzean.</p>`;
+      });
+
+    // Renderizar Lista
+    function renderList(filter = "") {
+      udalerriUl.innerHTML = "";
+      const sortedKeys = Object.keys(udalerriDatuak).sort((a, b) => a.localeCompare(b));
+
+      sortedKeys.forEach(key => {
+        const item = udalerriDatuak[key];
+        if (item.titulua.toLowerCase().includes(filter.toLowerCase())) {
+          const li = document.createElement('li');
+          li.className = 'udalerri-li';
+          li.textContent = item.titulua;
+          li.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectUdalerria(key);
+          });
+          udalerriUl.appendChild(li);
+        }
+      });
+    }
+
+    /* 🗓️ EGUTEGIA MATRIZ / MESES PARSER */
+    const monthNames = {
+      1: "Urtarrila", 2: "Otsaila", 3: "Martxoa", 4: "Apirila",
+      5: "Maiatza", 6: "Ekaina", 7: "Uztaila", 8: "Abuztua",
+      9: "Iraila", 10: "Urria", 11: "Azaroa", 12: "Abendua"
+    };
+
+    const monthShortNames = {
+      1: "Urt", 2: "Ots", 3: "Mar", 4: "Api",
+      5: "Mai", 6: "Eka", 7: "Uzt", 8: "Abu",
+      9: "Ira", 10: "Urr", 11: "Aza", 12: "Abe"
+    };
+
+    const hilabeteak = {
+      "urtarrilak": 1, "urtarrila": 1,
+      "otsailak": 2, "otsaila": 2,
+      "martxoak": 3, "martxoa": 3,
+      "apirilak": 4, "apirila": 4,
+      "maiatzak": 5, "maiatza": 5,
+      "ekainak": 6, "ekaina": 6,
+      "uztailak": 7, "uztaila": 7,
+      "abuztuak": 8, "abuztua": 8,
+      "irailak": 9, "iraila": 9,
+      "urriak": 10, "urria": 10,
+      "azaroak": 11, "azaroa": 11,
+      "abenduak": 12, "abendua": 12
+    };
+
+    function parseRacesFromData() {
+      const races = [];
+      const tempDiv = document.createElement('div');
+
+      Object.keys(udalerriDatuak).forEach(key => {
+        const townData = udalerriDatuak[key];
+        if (!townData.edukia) return;
+
+        tempDiv.innerHTML = townData.edukia;
+        const h3List = tempDiv.querySelectorAll('h3');
+
+        h3List.forEach(h3 => {
+          const link = h3.querySelector('a');
+          const raceName = link ? link.textContent.replace('↗', '').trim() : h3.textContent.trim();
+          const ul = h3.nextElementSibling;
+
+          if (ul && ul.tagName.toLowerCase() === 'ul') {
+            const liList = ul.querySelectorAll('li');
+            liList.forEach(li => {
+              const text = li.innerText || li.textContent;
+              const match = text.match(/(\d{4})(?:\s*\(([^)]+)\))?:\s*(.+)/);
+              if (match) {
+                const year = match[1];
+                const edition = match[2] || '';
+                const dateStr = match[3].trim();
+
+                if (dateStr && dateStr !== '-') {
+                  let day = 0;
+                  let monthNum = 0;
+
+                  const words = dateStr.toLowerCase().split(/\s+/);
+                  words.forEach(w => {
+                    const num = parseInt(w, 10);
+                    if (!isNaN(num) && num <= 31) {
+                      day = num;
+                    } else if (hilabeteak[w]) {
+                      monthNum = hilabeteak[w];
+                    }
+                  });
+
+                  races.push({
+                    townKey: key,
+                    townTitle: townData.titulua,
+                    raceName: raceName,
+                    year: year,
+                    edition: edition,
+                    dateStr: dateStr,
+                    monthNum: monthNum,
+                    day: day
+                  });
+                }
+              }
+            });
+          }
+        });
+      });
+
+      return races;
+    }
+
+    function renderCalendarGrid(filter = "", selectedYear = "2027") {
+      calendarGrid.innerHTML = "";
+      const allRaces = parseRacesFromData();
+
+      const filteredRaces = allRaces.filter(r => {
+        const matchesYear = r.year === selectedYear;
+        const matchesSearch = filter === "" || 
+                              r.raceName.toLowerCase().includes(filter.toLowerCase()) || 
+                              r.townTitle.toLowerCase().includes(filter.toLowerCase());
+        return matchesYear && matchesSearch;
+      });
+
+      if (filteredRaces.length === 0) {
+        calendarGrid.innerHTML = `<div class="calendar-empty">Ez dago lasterketarik baieztatuta ${selectedYear} urterako.</div>`;
+        return;
+      }
+
+      const racesByMonth = {};
+      filteredRaces.forEach(r => {
+        const m = r.monthNum || 0;
+        if (!racesByMonth[m]) racesByMonth[m] = [];
+        racesByMonth[m].push(r);
+      });
+
+      const sortedMonths = Object.keys(racesByMonth).map(Number).sort((a,b) => a - b);
+
+      sortedMonths.forEach(mNum => {
+        const monthBlock = document.createElement('div');
+        monthBlock.className = 'month-block';
+
+        const monthTitle = monthNames[mNum] || "Beste batzuk";
+        
+        let racesHtml = '';
+        const mRaces = racesByMonth[mNum].sort((a,b) => a.day - b.day);
+
+        mRaces.forEach(r => {
+          racesHtml += `
+            <div class="calendar-item" onclick="selectUdalerria('${r.townKey}')">
+              <div class="date-badge">
+                <span class="day-num">${r.day || '--'}</span>
+                <span class="month-name">${monthShortNames[r.monthNum] || ''}</span>
+              </div>
+              <div class="race-info">
+                <span class="race-title">${r.raceName} ${r.edition ? `(${r.edition})` : ''}</span>
+                <div class="race-meta">
+                  <span class="race-town-tag">${r.townTitle}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        monthBlock.innerHTML = `
+          <div class="month-header">${monthTitle}</div>
+          <div class="month-races">${racesHtml}</div>
+        `;
+
+        calendarGrid.appendChild(monthBlock);
+      });
+    }
+
+    // Buscador en tiempo real
+    searchInput.addEventListener('input', (e) => {
+      const term = e.target.value;
+      renderList(term);
+      renderCalendarGrid(term, yearSelect.value);
+
+      if (term.trim() !== "") {
+        const matchKey = Object.keys(udalerriDatuak).find(k => 
+          udalerriDatuak[k].titulua.toLowerCase().includes(term.toLowerCase())
+        );
+        if (matchKey) {
+          selectUdalerria(matchKey);
+        }
+      }
+    });
+
+    yearSelect.addEventListener('change', (e) => {
+      renderCalendarGrid(searchInput.value, e.target.value);
+    });
+
+    renderList();
+    renderCalendarGrid(searchInput.value, yearSelect.value);
+
+    // Toggle entre Vistas
+    btnMap.addEventListener('click', () => {
+      btnMap.classList.add('active');
+      btnList.classList.remove('active');
+      btnCalendar.classList.remove('active');
+
+      mapContainer.style.display = 'flex';
+      listContainer.style.display = 'none';
+      calendarContainer.style.display = 'none';
+    });
+
+    btnList.addEventListener('click', () => {
+      btnList.classList.add('active');
+      btnMap.classList.remove('active');
+      btnCalendar.classList.remove('active');
+
+      mapContainer.style.display = 'none';
+      listContainer.style.display = 'flex';
+      calendarContainer.style.display = 'none';
+    });
+
+    btnCalendar.addEventListener('click', () => {
+      btnCalendar.classList.add('active');
+      btnMap.classList.remove('active');
+      btnList.classList.remove('active');
+
+      mapContainer.style.display = 'none';
+      listContainer.style.display = 'none';
+      calendarContainer.style.display = 'flex';
+
+      renderCalendarGrid(searchInput.value, yearSelect.value);
+    });
+  </script>
+</body>
+</html>
