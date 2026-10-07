@@ -6,7 +6,7 @@
   <title>Gipuzkoako Mapa Interaktiboa</title>
   <style>
     :root {
-      /* 🎨 PALETA BEIGE Y TONES DE MONTAÑA */
+      /* 🎨 PALETA BEIGE Y TONOS DE MONTAÑA */
       --bg-color: #f5f2eb;
       --card-bg: #faf7f2;
       --sidebar-width: 550px;
@@ -563,7 +563,7 @@
           <h3>Mendi Lasterketen Egutegia</h3>
           <select id="yearSelect" class="year-select">
             <option value="2026">2026</option>
-            <option value="2027 selected">2027</option>
+            <option value="2027" selected>2027</option>
           </select>
         </div>
         <div class="months-grid" id="calendarGrid"></div>
@@ -1112,7 +1112,7 @@
       return races;
     }
 
-    function renderCalendarGrid(filter = "", selectedYear = "2026") {
+    function renderCalendarGrid(filter = "", selectedYear = "2027") {
       calendarGrid.innerHTML = "";
       const allRaces = parseRacesFromData();
 
