@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gipuzkoako Mapa Interaktiboa</title>
+  <title>Mendi Lasterketen Egutegia</title>
   <style>
     :root {
       /* 🎨 PALETA BEIGE Y TONOS DE MONTAÑA */
@@ -173,6 +173,27 @@
       border-radius: 3px;
       border: 1px solid var(--border-color);
       flex-direction: column;
+    }
+
+    .list-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .province-select {
+      padding: 5px 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      outline: none;
+      color: var(--primary-color);
+      background: var(--bg-color);
+      cursor: pointer;
     }
 
     .udalerri-ul {
@@ -519,7 +540,7 @@
 
   <!-- Goiburua -->
   <header class="header">
-    <h1>Gipuzkoa</h1>
+    <h1>Euskal Herriko Mendi Lasterketak</h1>
     <div class="header-controls">
       <div class="view-toggle">
         <button class="toggle-btn" id="btnMap">Mapa</button>
@@ -544,16 +565,23 @@
     <div class="main-area" id="mainArea">
       <!-- 2º EN MÓVIL: Buscador -->
       <div class="search-wrapper" id="searchWrapper">
-        <input type="text" id="searchInput" class="search-input" placeholder="Bilatu udalerria..." autocomplete="off">
+        <input type="text" id="searchInput" class="search-input" placeholder="Bilatu udalerria edo lasterketa..." autocomplete="off">
       </div>
 
-      <!-- 3º EN MÓVIL: Mapa -->
+      <!-- 3º EN MÓVIL: Mapa (Gipuzkoa) -->
       <main class="map-container" id="mapContainer">
         <p>Mapa kargatzen...</p>
       </main>
 
-      <!-- 3º EN MÓVIL: Lista -->
+      <!-- 3º EN MÓVIL: Lista con Selector de Lurralde -->
       <div class="list-container" id="listContainer">
+        <div class="list-toolbar">
+          <span style="font-weight: 700; font-size: 0.9rem;">Lurraldea:</span>
+          <select id="provinceSelect" class="province-select">
+            <option value="Gipuzkoa" selected>Gipuzkoa</option>
+            <option value="Nafarroa">Nafarroa</option>
+          </select>
+        </div>
         <ul class="udalerri-ul" id="udalerriUl"></ul>
       </div>
 
@@ -583,18 +611,20 @@
     const calendarGrid = document.getElementById('calendarGrid');
     const searchInput = document.getElementById('searchInput');
     const yearSelect = document.getElementById('yearSelect');
+    const provinceSelect = document.getElementById('provinceSelect');
     const tooltip = document.getElementById('mapTooltip');
 
     const btnMap = document.getElementById('btnMap');
     const btnList = document.getElementById('btnList');
     const btnCalendar = document.getElementById('btnCalendar');
 
-    /* 📌 UDALERRIEN DATU-BASEA */
+    /* 📌 UDALERRIEN DATU-BASEA (Gipuzkoa + Nafarroa) */
     const udalerriDatuak = {
-      "Abaltzisketa": { titulua: "Abaltzisketa", edukia: "" },
-      "Aduna": { titulua: "Aduna", edukia: "" },
+      // GIPUZKOA
+      "Abaltzisketa": { titulua: "Abaltzisketa", province: "Gipuzkoa", edukia: "" },
+      "Aduna": { titulua: "Aduna", province: "Gipuzkoa", edukia: "" },
       "Aia": { 
-        titulua: "Aia", 
+        titulua: "Aia", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/aiako.mendi.lasterketa/" class="race-link">Aiako Mendi Lasterketa ↗</a>
@@ -606,15 +636,15 @@
           </ul>
         ` 
       },
-      "Aizarnazabal": { titulua: "Aizarnazabal", edukia: "" },
-      "Albiztur": { titulua: "Albiztur", edukia: "" },
-      "Alegia": { titulua: "Alegia", edukia: "" },
-      "Alkiza": { titulua: "Alkiza", edukia: "" },
-      "Altzaga": { titulua: "Altzaga", edukia: "" },
-      "Altzo": { titulua: "Altzo", edukia: "" },
-      "Amezketa": { titulua: "Amezketa", edukia: "" },
+      "Aizarnazabal": { titulua: "Aizarnazabal", province: "Gipuzkoa", edukia: "" },
+      "Albiztur": { titulua: "Albiztur", province: "Gipuzkoa", edukia: "" },
+      "Alegia": { titulua: "Alegia", province: "Gipuzkoa", edukia: "" },
+      "Alkiza": { titulua: "Alkiza", province: "Gipuzkoa", edukia: "" },
+      "Altzaga": { titulua: "Altzaga", province: "Gipuzkoa", edukia: "" },
+      "Altzo": { titulua: "Altzo", province: "Gipuzkoa", edukia: "" },
+      "Amezketa": { titulua: "Amezketa", province: "Gipuzkoa", edukia: "" },
       "Andoain": { 
-        titulua: "Andoain", 
+        titulua: "Andoain", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/sorabillatrail/" class="race-link">Sorabilla Mendi Lasterketa ↗</a>
@@ -624,11 +654,11 @@
           </ul>
         ` 
       },
-      "Anoeta": { titulua: "Anoeta", edukia: "" },
-      "Antzuola": { titulua: "Antzuola", edukia: "" },
-      "Arama": { titulua: "Arama", edukia: "" },
+      "Anoeta": { titulua: "Anoeta", province: "Gipuzkoa", edukia: "" },
+      "Antzuola": { titulua: "Antzuola", province: "Gipuzkoa", edukia: "" },
+      "Arama": { titulua: "Arama", province: "Gipuzkoa", edukia: "" },
       "Aretxabaleta": { 
-        titulua: "Aretxabaleta", 
+        titulua: "Aretxabaleta", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/ikazkin_trail/" class="race-link">Ikazkin Trail ↗</a>
@@ -640,9 +670,9 @@
           </ul>
         ` 
       },
-      "Asteasu": { titulua: "Asteasu", edukia: "" },
+      "Asteasu": { titulua: "Asteasu", province: "Gipuzkoa", edukia: "" },
       "Astigarraga": { 
-        titulua: "Astigarraga", 
+        titulua: "Astigarraga", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/basatrail/" class="race-link">Basatrail Mendi Lasterketa ↗</a>
@@ -652,12 +682,12 @@
           </ul>
         ` 
       },
-      "Ataun": { titulua: "Ataun", edukia: "" },
-      "Azkoitia": { titulua: "Azkoitia", edukia: "" },
-      "Azpeitia": { titulua: "Azpeitia", edukia: "" },
-      "Baliarrain": { titulua: "Baliarrain", edukia: "" },
+      "Ataun": { titulua: "Ataun", province: "Gipuzkoa", edukia: "" },
+      "Azkoitia": { titulua: "Azkoitia", province: "Gipuzkoa", edukia: "" },
+      "Azpeitia": { titulua: "Azpeitia", province: "Gipuzkoa", edukia: "" },
+      "Baliarrain": { titulua: "Baliarrain", province: "Gipuzkoa", edukia: "" },
       "Beasain": { 
-        titulua: "Beasain", 
+        titulua: "Beasain", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/marimurumendi/" class="race-link">Marimurumendi ↗</a>
@@ -684,10 +714,10 @@
           </ul>
         ` 
       },
-      "Beizama": { titulua: "Beizama", edukia: "" },
-      "Belauntza": { titulua: "Belauntza", edukia: "" },
+      "Beizama": { titulua: "Beizama", province: "Gipuzkoa", edukia: "" },
+      "Belauntza": { titulua: "Belauntza", province: "Gipuzkoa", edukia: "" },
       "Berastegi": { 
-        titulua: "Berastegi", 
+        titulua: "Berastegi", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/negutrail/" class="race-link">Negu Trail Mendi Lasterketa ↗</a>
@@ -699,17 +729,17 @@
           </ul>
         ` 
       },
-      "Bergara": { titulua: "Bergara", edukia: "" },
-      "Berrobi": { titulua: "Berrobi", edukia: "" },
-      "Bidegoian": { titulua: "Bidania-Goiatz", edukia: "" },
-      "Deba": { titulua: "Deba", edukia: "" },
-      "Donostia": { titulua: "Donostia", edukia: "" },
-      "Eibar": { titulua: "Eibar", edukia: "" },
-      "Elduain": { titulua: "Elduain", edukia: "" },
-      "Elgeta": { titulua: "Elgeta", edukia: "" },
-      "Elgoibar": { titulua: "Elgoibar", edukia: "" },
+      "Bergara": { titulua: "Bergara", province: "Gipuzkoa", edukia: "" },
+      "Berrobi": { titulua: "Berrobi", province: "Gipuzkoa", edukia: "" },
+      "Bidegoian": { titulua: "Bidania-Goiatz", province: "Gipuzkoa", edukia: "" },
+      "Deba": { titulua: "Deba", province: "Gipuzkoa", edukia: "" },
+      "Donostia": { titulua: "Donostia", province: "Gipuzkoa", edukia: "" },
+      "Eibar": { titulua: "Eibar", province: "Gipuzkoa", edukia: "" },
+      "Elduain": { titulua: "Elduain", province: "Gipuzkoa", edukia: "" },
+      "Elgeta": { titulua: "Elgeta", province: "Gipuzkoa", edukia: "" },
+      "Elgoibar": { titulua: "Elgoibar", province: "Gipuzkoa", edukia: "" },
       "Errenteria": { 
-        titulua: "Errenteria", 
+        titulua: "Errenteria", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/landarbasotrail/" class="race-link">Landarbaso Trail ↗</a>
@@ -721,11 +751,11 @@
           </ul>
         ` 
       },
-      "Errezil": { titulua: "Errezil", edukia: "" },
-      "Eskoriatza": { titulua: "Eskoriatza", edukia: "" },
-      "Ezkio-Itsaso": { titulua: "Ezkio-Itsaso", edukia: "" },
+      "Errezil": { titulua: "Errezil", province: "Gipuzkoa", edukia: "" },
+      "Eskoriatza": { titulua: "Eskoriatza", province: "Gipuzkoa", edukia: "" },
+      "Ezkio-Itsaso": { titulua: "Ezkio-Itsaso", province: "Gipuzkoa", edukia: "" },
       "Gabiria": { 
-        titulua: "Gabiria", 
+        titulua: "Gabiria", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/leharrei/" class="race-link">Leharrei Mendi Lasterketa ↗</a>
@@ -745,11 +775,11 @@
           </ul>
         ` 
       },
-      "Gaintza": { titulua: "Gaintza", edukia: "" },
-      "Gaztelu": { titulua: "Gaztelu", edukia: "" },
-      "Getaria": { titulua: "Getaria", edukia: "" },
+      "Gaintza": { titulua: "Gaintza", province: "Gipuzkoa", edukia: "" },
+      "Gaztelu": { titulua: "Gaztelu", province: "Gipuzkoa", edukia: "" },
+      "Getaria": { titulua: "Getaria", province: "Gipuzkoa", edukia: "" },
       "Hernani": { 
-        titulua: "Hernani", 
+        titulua: "Hernani", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/axeriak_mlt/" class="race-link">Ereñotzuko Mendi Lasterketa ↗</a>
@@ -761,9 +791,9 @@
           </ul>
         ` 
       },
-      "Hernialde": { titulua: "Hernialde", edukia: "" },
+      "Hernialde": { titulua: "Hernialde", province: "Gipuzkoa", edukia: "" },
       "Hondarribia": { 
-        titulua: "Hondarribia", 
+        titulua: "Hondarribia", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/cdfortunake" class="race-link">Donostia-Hondarribia Talaia Bidea ↗</a>
@@ -783,9 +813,9 @@
           </ul>
         ` 
       },
-      "Ibarra": { titulua: "Ibarra", edukia: "" },
+      "Ibarra": { titulua: "Ibarra", province: "Gipuzkoa", edukia: "" },
       "Idiazabal": { 
-        titulua: "Idiazabal", 
+        titulua: "Idiazabal", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/axaritrailml/" class="race-link">Axari Trail ↗</a>
@@ -797,13 +827,13 @@
           </ul>
         ` 
       },
-      "Ikaztegieta": { titulua: "Ikaztegieta", edukia: "" },
-      "Irun": { titulua: "Irun", edukia: "" },
-      "Irura": { titulua: "Irura", edukia: "" },
-      "Itsasondo": { titulua: "Itsasondo", edukia: "" },
-      "Larraul": { titulua: "Larraul", edukia: "" },
+      "Ikaztegieta": { titulua: "Ikaztegieta", province: "Gipuzkoa", edukia: "" },
+      "Irun": { titulua: "Irun", province: "Gipuzkoa", edukia: "" },
+      "Irura": { titulua: "Irura", province: "Gipuzkoa", edukia: "" },
+      "Itsasondo": { titulua: "Itsasondo", province: "Gipuzkoa", edukia: "" },
+      "Larraul": { titulua: "Larraul", province: "Gipuzkoa", edukia: "" },
       "Lasarte-Oria": { 
-        titulua: "Lasarte-Oria", 
+        titulua: "Lasarte-Oria", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/lasarteoriatrail/" class="race-link">Lasarte-Oriako Mendi Lasterketa ↗</a>
@@ -815,10 +845,10 @@
           </ul>
         ` 
       },
-      "Lazkao": { titulua: "Lazkao", edukia: "" },
-      "Leaburu": { titulua: "Leaburu", edukia: "" },
+      "Lazkao": { titulua: "Lazkao", province: "Gipuzkoa", edukia: "" },
+      "Leaburu": { titulua: "Leaburu", province: "Gipuzkoa", edukia: "" },
       "Legazpi": { 
-        titulua: "Legazpi", 
+        titulua: "Legazpi", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/korostitrail/" class="race-link">Korosti Trail ↗</a>
@@ -830,9 +860,9 @@
           </ul>
         ` 
       },
-      "Legorreta": { titulua: "Legorreta", edukia: "" },
+      "Legorreta": { titulua: "Legorreta", province: "Gipuzkoa", edukia: "" },
       "Lezo": { 
-        titulua: "Lezo", 
+        titulua: "Lezo", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/lezo_jaizkibelml/" class="race-link">Lezo-Jaizkibel Mendi Lasterketa ↗</a>
@@ -846,7 +876,7 @@
         ` 
       },
       "Mendaro": { 
-        titulua: "Mendaro", 
+        titulua: "Mendaro", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/kilimontrail/" class="race-link">Kilimon Trail ↗</a>
@@ -858,10 +888,10 @@
           </ul>
         ` 
       },
-      "Mutiloa": { titulua: "Mutiloa", edukia: "" },
-      "Mutriku": { titulua: "Mutriku", edukia: "" },
+      "Mutiloa": { titulua: "Mutiloa", province: "Gipuzkoa", edukia: "" },
+      "Mutriku": { titulua: "Mutriku", province: "Gipuzkoa", edukia: "" },
       "Oiartzun": { 
-        titulua: "Oiartzun", 
+        titulua: "Oiartzun", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/intxixutrail/" class="race-link">Intxixu Trail ↗</a>
@@ -873,10 +903,10 @@
           </ul>
         ` 
       },
-      "Olaberria": { titulua: "Olaberria", edukia: "" },
-      "Oñati": { titulua: "Oñati", edukia: "" },
+      "Olaberria": { titulua: "Olaberria", province: "Gipuzkoa", edukia: "" },
+      "Oñati": { titulua: "Oñati", province: "Gipuzkoa", edukia: "" },
       "Ordizia": { 
-        titulua: "Ordizia", 
+        titulua: "Ordizia", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/ordizia.mendilasterketa/" class="race-link">Ordiziako Mendi Lasterketa ↗</a>
@@ -889,7 +919,7 @@
         ` 
       },
       "Orendain": { 
-        titulua: "Orendain", 
+        titulua: "Orendain", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/eltxotrail/" class="race-link">Eltxo Trail ↗</a>
@@ -901,11 +931,11 @@
           </ul>
         ` 
       },
-      "Orexa": { titulua: "Orexa", edukia: "" },
-      "Orio": { titulua: "Orio", edukia: "" },
-      "Ormaiztegi": { titulua: "Ormaiztegi", edukia: "" },
+      "Orexa": { titulua: "Orexa", province: "Gipuzkoa", edukia: "" },
+      "Orio": { titulua: "Orio", province: "Gipuzkoa", edukia: "" },
+      "Ormaiztegi": { titulua: "Ormaiztegi", province: "Gipuzkoa", edukia: "" },
       "Pasaia": { 
-        titulua: "Pasaia", 
+        titulua: "Pasaia", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/molinotrail/" class="race-link">Moliño Trail ↗</a>
@@ -916,7 +946,7 @@
         ` 
       },
       "Segura": { 
-        titulua: "Segura", 
+        titulua: "Segura", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/sansonproba/" class="race-link">Sanson ↗</a>
@@ -928,9 +958,9 @@
           </ul>
         ` 
       },
-      "Soraluze": { titulua: "Soraluze", edukia: "" },
+      "Soraluze": { titulua: "Soraluze", province: "Gipuzkoa", edukia: "" },
       "Tolosa": { 
-        titulua: "Tolosa", 
+        titulua: "Tolosa", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/t3tmaratoia/" class="race-link">T2T ↗</a>
@@ -950,10 +980,10 @@
           </ul>
         ` 
       },
-      "Urnieta": { titulua: "Urnieta", edukia: "" },
-      "Urretxu": { titulua: "Urretxu", edukia: "" },
+      "Urnieta": { titulua: "Urnieta", province: "Gipuzkoa", edukia: "" },
+      "Urretxu": { titulua: "Urretxu", province: "Gipuzkoa", edukia: "" },
       "Usurbil": { 
-        titulua: "Usurbil", 
+        titulua: "Usurbil", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/uxuetrail_2026" class="race-link">Uxue Trail ↗</a>
@@ -966,7 +996,7 @@
         ` 
       },
       "Amasa-Villabona": { 
-        titulua: "Amasa-Villabona", 
+        titulua: "Amasa-Villabona", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/trikuharrimendilasterketa" class="race-link">Trikuharri Mendi Lasterketa ↗</a>
@@ -979,7 +1009,7 @@
         ` 
       },
       "Zaldibia": { 
-        titulua: "Zaldibia", 
+        titulua: "Zaldibia", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/zaldibiakoml/" class="race-link">Zaldibiako Mendi Lasterketa ↗</a>
@@ -992,7 +1022,7 @@
         ` 
       },
       "Zarautz": { 
-        titulua: "Zarautz", 
+        titulua: "Zarautz", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/pagoetamendilasterketazarautz" class="race-link">Pagoeta Mendi Lasterketa ↗</a>
@@ -1004,10 +1034,10 @@
           </ul>
         ` 
       },
-      "Zegama": { titulua: "Zegama", edukia: "" },
-      "Zerain": { titulua: "Zerain", edukia: "" },
+      "Zegama": { titulua: "Zegama", province: "Gipuzkoa", edukia: "" },
+      "Zerain": { titulua: "Zerain", province: "Gipuzkoa", edukia: "" },
       "Zestoa": { 
-        titulua: "Zestoa", 
+        titulua: "Zestoa", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/kobazkobatrail/" class="race-link">Kobaz Koba Trail ↗</a>
@@ -1019,9 +1049,9 @@
           </ul>
         `
       },
-      "Zizurkil": { titulua: "Zizurkil", edukia: "" },
+      "Zizurkil": { titulua: "Zizurkil", province: "Gipuzkoa", edukia: "" },
       "Zumaia": { 
-        titulua: "Zumaia", 
+        titulua: "Zumaia", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/zumaiaflyschtrail/" class="race-link">Flysch Trail ↗</a>
@@ -1034,7 +1064,7 @@
         ` 
       },
       "Zumarraga": { 
-        titulua: "Zumarraga", 
+        titulua: "Zumarraga", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/uztrail/" class="race-link">UZ Trail ↗</a>
@@ -1047,7 +1077,7 @@
         ` 
       },
       "Arrasate": { 
-        titulua: "Arrasate", 
+        titulua: "Arrasate", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/arrasateudalatx/" class="race-link">Arrasate Udalatx ↗</a>
@@ -1060,7 +1090,7 @@
         ` 
       },
       "Leintz-Gatzaga": { 
-        titulua: "Leintz-Gatzaga", 
+        titulua: "Leintz-Gatzaga", province: "Gipuzkoa",
         edukia: `
           <h3>
             <a href="https://www.instagram.com/gatzatrail/" class="race-link">Gatza Trail ↗</a>
@@ -1069,6 +1099,73 @@
             <li><strong>2024 (III):</strong> Maiatzak 26</li>
             <li><strong>2025 (IV):</strong> Maiatzak 25</li>
             <li><strong>2026 (V):</strong> Maiatzak 31</li>
+          </ul>
+        ` 
+      },
+
+      // NAFARROA
+      "Bera": { 
+        titulua: "Bera", province: "Nafarroa",
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/berakomendilasterketa/" class="race-link">Berako Mendi Lasterketa ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (XVIII):</strong> Apirilak 14</li>
+            <li><strong>2025 (XIX):</strong> Apirilak 13</li>
+            <li><strong>2026 (XX):</strong> Apirilak 12</li>
+          </ul>
+        ` 
+      },
+      "Lesaka": { 
+        titulua: "Lesaka", province: "Nafarroa",
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/lesakakomendilasterketa/" class="race-link">Lesakako Mendi Lasterketa ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (XIV):</strong> Maiatzak 19</li>
+            <li><strong>2025 (XV):</strong> Maiatzak 18</li>
+            <li><strong>2026 (XVI):</strong> Maiatzak 17</li>
+          </ul>
+        ` 
+      },
+      "Arantza": { 
+        titulua: "Arantza", province: "Nafarroa",
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/arantzakomendilasterketa/" class="race-link">Arantzako Mendi Lasterketa ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (XI):</strong> Ekainak 23</li>
+            <li><strong>2025 (XII):</strong> Ekainak 22</li>
+            <li><strong>2026 (XIII):</strong> Ekainak 21</li>
+          </ul>
+        ` 
+      },
+      "Zubieta": { 
+        titulua: "Zubieta", province: "Nafarroa",
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/zubietakomendilasterketa/" class="race-link">Zubietako Mendi Lasterketa ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (IV):</strong> Apirilak 27</li>
+            <li><strong>2025 (V):</strong> Apirilak 26</li>
+            <li><strong>2026 (VI):</strong> Apirilak 25</li>
+          </ul>
+        ` 
+      },
+      "Goizueta": { 
+        titulua: "Goizueta", province: "Nafarroa",
+        edukia: `
+          <h3>
+            <a href="https://www.instagram.com/goizuetakomendilasterketa/" class="race-link">Goizuetako Mendi Lasterketa ↗</a>
+          </h3>
+          <ul>
+            <li><strong>2024 (V):</strong> Uztailak 13</li>
+            <li><strong>2025 (VI):</strong> Uztailak 12</li>
+            <li><strong>2026 (VII):</strong> Uztailak 11</li>
           </ul>
         ` 
       }
@@ -1124,14 +1221,17 @@
         mapContainer.innerHTML = `<p style="color:red;">Errorea mapa.svg kargatzean.</p>`;
       });
 
-    // Renderizar Lista
-    function renderList(filter = "") {
+    // Renderizar Lista filtrada por provincia y buscador
+    function renderList(filter = "", province = "Gipuzkoa") {
       udalerriUl.innerHTML = "";
       const sortedKeys = Object.keys(udalerriDatuak).sort((a, b) => a.localeCompare(b));
 
       sortedKeys.forEach(key => {
         const item = udalerriDatuak[key];
-        if (item.titulua.toLowerCase().includes(filter.toLowerCase())) {
+        const matchesProvince = item.province === province;
+        const matchesSearch = item.titulua.toLowerCase().includes(filter.toLowerCase());
+
+        if (matchesProvince && matchesSearch) {
           const li = document.createElement('li');
           li.className = 'udalerri-li';
           li.textContent = item.titulua;
@@ -1296,7 +1396,7 @@
     // Buscador en tiempo real
     searchInput.addEventListener('input', (e) => {
       const term = e.target.value;
-      renderList(term);
+      renderList(term, provinceSelect.value);
       renderCalendarGrid(term, yearSelect.value);
 
       if (term.trim() !== "") {
@@ -1313,7 +1413,11 @@
       renderCalendarGrid(searchInput.value, e.target.value);
     });
 
-    renderList();
+    provinceSelect.addEventListener('change', (e) => {
+      renderList(searchInput.value, e.target.value);
+    });
+
+    renderList(searchInput.value, provinceSelect.value);
     renderCalendarGrid(searchInput.value, yearSelect.value);
 
     // Toggle entre Vistas
